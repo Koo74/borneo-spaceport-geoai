@@ -25,6 +25,7 @@ ENHANCEMENTS:
 - ✅ DETAILED RECOMMENDATION STRATEGY (actionable insights)
 - ✅ FIXED: Score can no longer exceed 100%
 - ✅ FIXED: Feasibility now consistent with critical actions
+- ✅ NEW: Satellite map toggle (see real terrain!)
 """
 
 import streamlit as st
@@ -289,6 +290,15 @@ CYBERPUNK_CSS = """
         font-family: 'Courier New', monospace !important;
         font-size: 0.8rem !important;
     }
+    /* Radio button styling for map toggle */
+    .stRadio label {
+        color: #ffffff !important;
+        font-family: 'Courier New', monospace !important;
+        font-size: 0.9rem !important;
+    }
+    .stRadio [role="radiogroup"] {
+        gap: 8px;
+    }
 </style>
 """
 
@@ -464,7 +474,6 @@ def generate_recommendation_strategy(result_data: Dict) -> Dict:
     else:
         score_band, score_emoji = 'Poor', '❌'
 
-    # Critical overrides — feasibility can never exceed what Critical actions permit
     if critical_count >= 3:
         feasibility = '❌ Poor - Major critical issues must be resolved before development'
         risk_level = 'Very High'
@@ -1498,7 +1507,6 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
         }
 
         # ============ FIXED BASE SCORE (0-100) ============
-        # Each criterion is scored 0-5, so max weighted total = sum(weights) * 5
         total_score = sum(scores[key] * weights.get(key, 0) for key in scores.keys() if key in weights)
         max_possible = sum(weights.values()) * 5.0
         percentage = (total_score / max_possible) * 100 if max_possible > 0 else 0
@@ -1521,7 +1529,7 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             penalty += 8.0
             penalty_reasons.append("Scarce land availability: -8%")
 
-        # Clamp final score to 0-100 (never negative, never over 100)
+        # Clamp final score to 0-100
         percentage = max(0.0, min(100.0, percentage - penalty))
 
         # Rating
@@ -1899,8 +1907,8 @@ def init_session_state():
         st.session_state.reasoning_log = []
     if 'current_results' not in st.session_state:
         st.session_state.current_results = None
-    if 'basemap' not in st.session_state:
-        st.session_state.basemap = "OpenStreetMap"
+    if 'basemap_choice' not in st.session_state:
+        st.session_state.basemap_choice = "OpenStreetMap"
     if 'show_radius_circle' not in st.session_state:
         st.session_state.show_radius_circle = True
     if 'comparison_mode' not in st.session_state:
@@ -1950,15 +1958,34 @@ def render_sidebar():
             st.rerun()
         st.caption("Or click on the map to select any location")
         st.divider()
+
+        # ============================================================
+        # MAP SETTINGS - WITH SATELLITE TOGGLE
+        # ============================================================
         st.markdown("""
         <div style="color: #00f0ff; font-family: 'Courier New', monospace;
              letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 10px;">
             🗺️ MAP SETTINGS
         </div>
         """, unsafe_allow_html=True)
-        st.session_state.basemap = "OpenStreetMap"
+
+        basemap_choice = st.radio(
+            "Map Style",
+            options=["🗺️ OpenStreetMap", "🛰️ Satellite"],
+            index=0 if st.session_state.basemap_choice == "OpenStreetMap" else 1,
+            horizontal=True,
+            label_visibility="collapsed"
+        )
+        # Store the clean value
+        if "Satellite" in basemap_choice:
+            st.session_state.basemap_choice = "Satellite"
+        else:
+            st.session_state.basemap_choice = "OpenStreetMap"
+
         st.session_state.show_radius_circle = st.checkbox("Show Search Radius", value=True)
         st.divider()
+        # ============================================================
+
         st.markdown("""
         <div style="color: #00f0ff; font-family: 'Courier New', monospace;
              letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 10px;">
@@ -2078,6 +2105,12 @@ def render_sidebar():
             st.rerun()
         return {'radius': radius}
 
+def get_tiles_for_basemap(basemap_choice: str) -> str:
+    """Return the correct folium tiles string for the user's choice."""
+    if basemap_choice == "Satellite":
+        return "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+    return "OpenStreetMap"
+
 def render_map(params: Dict):
     st.subheader("🗺️ Borneo Spaceport Site Map")
     center = [5.0, 117.0]
@@ -2086,10 +2119,22 @@ def render_map(params: Dict):
         center = [st.session_state.selected_location.lat,
                   st.session_state.selected_location.lon]
         location_name = st.session_state.selected_location.name or "Borneo Location"
+
+    basemap_choice = st.session_state.get('basemap_choice', 'OpenStreetMap')
+    tiles_url = get_tiles_for_basemap(basemap_choice)
+
     try:
-        m = folium.Map(location=center, zoom_start=7, tiles="OpenStreetMap")
+        if basemap_choice == "Satellite":
+            m = folium.Map(
+                location=center, zoom_start=7,
+                tiles=tiles_url,
+                attr='Esri World Imagery'
+            )
+        else:
+            m = folium.Map(location=center, zoom_start=7, tiles="OpenStreetMap")
     except Exception:
         m = folium.Map(location=center, zoom_start=7)
+
     if st.session_state.selected_location:
         marker_color = 'red'
         result_data = st.session_state.get('current_results', None)
@@ -2272,7 +2317,6 @@ def render_results():
         else:
             st.success("📍 **Geographic Rules (INSTANT)** - OSM unavailable")
 
-        # Show penalty if applied
         if result_data.get('penalty_applied', 0) > 0:
             with st.expander(f"⚠️ Score Penalty Applied: -{result_data['penalty_applied']}%"):
                 st.write(f"**Base score:** {result_data.get('base_percentage', 0)}%")
@@ -2525,7 +2569,16 @@ def render_comparison_mode():
             st.session_state.candidate_scores = {row['Site']: row['Suitability %'] for _, row in df.iterrows()}
             st.write("---")
             st.write("**🗺️ Site Map with Suitability Scores**")
-            m = folium.Map(location=[5.0, 117.0], zoom_start=7, tiles="OpenStreetMap")
+
+            # Respect the user's basemap choice here too
+            basemap_choice = st.session_state.get('basemap_choice', 'OpenStreetMap')
+            tiles_url = get_tiles_for_basemap(basemap_choice)
+            if basemap_choice == "Satellite":
+                m = folium.Map(location=[5.0, 117.0], zoom_start=7,
+                               tiles=tiles_url, attr='Esri World Imagery')
+            else:
+                m = folium.Map(location=[5.0, 117.0], zoom_start=7, tiles="OpenStreetMap")
+
             for _, row in df.iterrows():
                 name = row['Site']
                 score = row['Suitability %']
