@@ -23,6 +23,8 @@ ENHANCEMENTS:
 - ✅ CYBERPUNK / FUTURISTIC UI
 - ✅ CRYSTAL CLEAR READABILITY (all text pure white)
 - ✅ DETAILED RECOMMENDATION STRATEGY (actionable insights)
+- ✅ FIXED: Score can no longer exceed 100%
+- ✅ FIXED: Feasibility now consistent with critical actions
 """
 
 import streamlit as st
@@ -53,7 +55,6 @@ import queue
 
 CYBERPUNK_CSS = """
 <style>
-    /* Cyberpunk Theme Variables - HIGH CONTRAST */
     :root {
         --neon-cyan: #00f0ff;
         --neon-pink: #ff2d95;
@@ -63,20 +64,10 @@ CYBERPUNK_CSS = """
         --dark-bg: #0a0a0f;
         --card-bg: rgba(15, 15, 35, 0.92);
         --text-white: #ffffff;
-        --text-bright: #f0f0ff;
-        --text-light: #d0d0e8;
-        --text-muted: #a0a0c0;
-        --text-dark: #8080a0;
-        --glow: 0 0 20px rgba(0, 240, 255, 0.15);
-        --border-glow: 0 0 15px rgba(0, 240, 255, 0.3);
     }
-    
-    /* Main Container */
     .stApp {
         background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 50%, #0a0a1f 100%);
     }
-    
-    /* Main Title - CRYSTAL CLEAR */
     .main-title {
         font-family: 'Courier New', monospace;
         font-size: 3.5rem;
@@ -88,13 +79,10 @@ CYBERPUNK_CSS = """
         letter-spacing: 4px;
         animation: glowPulse 3s ease-in-out infinite;
     }
-    
     @keyframes glowPulse {
         0%, 100% { text-shadow: 0 0 40px rgba(0, 240, 255, 0.3); }
         50% { text-shadow: 0 0 60px rgba(0, 240, 255, 0.6), 0 0 80px rgba(176, 38, 255, 0.3); }
     }
-    
-    /* Subtitle - CRYSTAL CLEAR */
     .subtitle {
         font-family: 'Courier New', monospace;
         color: #00f0ff;
@@ -105,15 +93,11 @@ CYBERPUNK_CSS = """
         padding-bottom: 10px;
         margin-bottom: 20px;
     }
-    
-    /* Sidebar Cyberpunk Style */
     .css-1d391kg, .css-1633s9g {
         background: rgba(10, 10, 20, 0.95) !important;
         border-right: 1px solid rgba(0, 240, 255, 0.2) !important;
         backdrop-filter: blur(10px);
     }
-    
-    /* Sidebar Text - CRYSTAL CLEAR */
     .css-1d391kg p, .css-1633s9g p,
     .css-1d391kg label, .css-1633s9g label,
     .css-1d391kg div, .css-1633s9g div,
@@ -121,8 +105,6 @@ CYBERPUNK_CSS = """
         color: #ffffff !important;
         font-weight: 400 !important;
     }
-    
-    /* Recommendation Container - NEW */
     .recommendation-container {
         background: rgba(15, 15, 35, 0.85);
         border: 1px solid rgba(0, 240, 255, 0.2);
@@ -133,13 +115,11 @@ CYBERPUNK_CSS = """
         box-shadow: 0 0 30px rgba(0, 240, 255, 0.05);
         transition: all 0.3s ease;
     }
-    
     .recommendation-container:hover {
         border-color: #00f0ff;
         box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
         transform: translateY(-2px);
     }
-    
     .recommendation-title {
         color: #00f0ff;
         font-family: 'Courier New', monospace;
@@ -149,7 +129,6 @@ CYBERPUNK_CSS = """
         margin-bottom: 10px;
         text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
     }
-    
     .recommendation-item {
         color: #ffffff;
         font-family: 'Courier New', monospace;
@@ -158,68 +137,8 @@ CYBERPUNK_CSS = """
         border-bottom: 1px solid rgba(0, 240, 255, 0.05);
         line-height: 1.6;
     }
-    
-    .recommendation-item:last-child {
-        border-bottom: none;
-    }
-    
-    .recommendation-item .icon {
-        margin-right: 8px;
-    }
-    
-    .recommendation-priority-critical {
-        color: #ff2d95;
-        font-weight: bold;
-    }
-    
-    .recommendation-priority-high {
-        color: #ff2d95;
-        font-weight: bold;
-    }
-    
-    .recommendation-priority-medium {
-        color: #ffe84d;
-        font-weight: bold;
-    }
-    
-    .recommendation-priority-low {
-        color: #00f0ff;
-        font-weight: bold;
-    }
-    
-    .recommendation-timeline {
-        color: #8080a0;
-        font-family: 'Courier New', monospace;
-        font-size: 0.75rem;
-        letter-spacing: 1px;
-        margin-top: 10px;
-        padding: 10px;
-        border-top: 1px solid rgba(0, 240, 255, 0.1);
-    }
-    
-    /* Cards */
-    .cyber-card {
-        background: rgba(15, 15, 35, 0.85);
-        border: 1px solid rgba(0, 240, 255, 0.2);
-        border-radius: 12px;
-        padding: 20px;
-        margin: 10px 0;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 0 30px rgba(0, 240, 255, 0.05);
-        transition: all 0.3s ease;
-    }
-    
-    .cyber-card:hover {
-        border-color: #00f0ff;
-        box-shadow: 0 0 40px rgba(0, 240, 255, 0.15);
-        transform: translateY(-2px);
-    }
-    
-    .cyber-card p, .cyber-card div {
-        color: #ffffff !important;
-    }
-    
-    /* Glow Buttons - CRYSTAL CLEAR */
+    .recommendation-item:last-child { border-bottom: none; }
+    .recommendation-item .icon { margin-right: 8px; }
     .stButton > button {
         background: linear-gradient(135deg, rgba(0, 240, 255, 0.15), rgba(176, 38, 255, 0.15)) !important;
         border: 1px solid rgba(0, 240, 255, 0.4) !important;
@@ -232,7 +151,6 @@ CYBERPUNK_CSS = """
         backdrop-filter: blur(5px);
         text-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
     }
-    
     .stButton > button:hover {
         background: linear-gradient(135deg, rgba(0, 240, 255, 0.3), rgba(176, 38, 255, 0.3)) !important;
         border-color: #00f0ff !important;
@@ -240,12 +158,6 @@ CYBERPUNK_CSS = """
         transform: scale(1.02);
         color: #ffffff !important;
     }
-    
-    .stButton > button:active {
-        transform: scale(0.95);
-    }
-    
-    /* Primary Button - CRYSTAL CLEAR */
     .stButton > button[kind="primary"] {
         background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(176, 38, 255, 0.25)) !important;
         border: 1px solid #00f0ff !important;
@@ -253,50 +165,30 @@ CYBERPUNK_CSS = """
         color: #ffffff !important;
         text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
     }
-    
-    .stButton > button[kind="primary"]:hover {
-        background: linear-gradient(135deg, rgba(0, 240, 255, 0.4), rgba(176, 38, 255, 0.4)) !important;
-        box-shadow: 0 0 50px rgba(0, 240, 255, 0.4) !important;
-        color: #ffffff !important;
-    }
-    
-    /* Metrics - CRYSTAL CLEAR */
     [data-testid="metric-container"] {
         background: rgba(15, 15, 35, 0.8);
         border: 1px solid rgba(0, 240, 255, 0.15);
         border-radius: 10px;
         padding: 15px;
         backdrop-filter: blur(5px);
-        transition: all 0.3s ease;
     }
-    
-    [data-testid="metric-container"]:hover {
-        border-color: #00f0ff;
-        box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
-    }
-    
     [data-testid="metric-container"] label {
         color: #00f0ff !important;
         font-family: 'Courier New', monospace !important;
         letter-spacing: 2px;
         font-size: 0.8rem !important;
     }
-    
     [data-testid="metric-container"] div {
         color: #ffffff !important;
         font-family: 'Courier New', monospace !important;
         font-weight: bold !important;
-        text-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
     }
-    
-    /* Dataframe - CRYSTAL CLEAR */
     .dataframe {
         background: rgba(15, 15, 35, 0.8) !important;
         border: 1px solid rgba(0, 240, 255, 0.15) !important;
         border-radius: 10px !important;
         font-family: 'Courier New', monospace !important;
     }
-    
     .dataframe th {
         color: #00f0ff !important;
         background: rgba(0, 240, 255, 0.1) !important;
@@ -305,20 +197,11 @@ CYBERPUNK_CSS = """
         font-weight: bold !important;
         font-size: 0.9rem !important;
     }
-    
     .dataframe td {
         color: #ffffff !important;
         font-family: 'Courier New', monospace !important;
-        font-weight: 400 !important;
         font-size: 0.85rem !important;
     }
-    
-    .dataframe tr:hover td {
-        background: rgba(0, 240, 255, 0.08) !important;
-        color: #ffffff !important;
-    }
-    
-    /* Expanders - CRYSTAL CLEAR */
     .streamlit-expanderHeader {
         background: rgba(15, 15, 35, 0.8) !important;
         border: 1px solid rgba(0, 240, 255, 0.15) !important;
@@ -327,602 +210,297 @@ CYBERPUNK_CSS = """
         font-family: 'Courier New', monospace !important;
         letter-spacing: 1px;
         font-weight: bold !important;
-        font-size: 1rem !important;
     }
-    
-    .streamlit-expanderHeader:hover {
-        border-color: #00f0ff !important;
-        box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
-        color: #ffffff !important;
-    }
-    
     .streamlit-expanderContent {
         background: rgba(15, 15, 35, 0.8) !important;
         border: 1px solid rgba(0, 240, 255, 0.1) !important;
         border-top: none !important;
-        border-radius: 0 0 8px 8px !important;
     }
-    
     .streamlit-expanderContent p, .streamlit-expanderContent div,
     .streamlit-expanderContent li, .streamlit-expanderContent span {
         color: #ffffff !important;
-        font-size: 0.95rem !important;
     }
-    
-    /* Select Boxes - CRYSTAL CLEAR */
     .stSelectbox [data-baseweb="select"] {
         background: rgba(15, 15, 35, 0.8) !important;
         border: 1px solid rgba(0, 240, 255, 0.2) !important;
-        border-radius: 8px !important;
         color: #00f0ff !important;
     }
-    
-    .stSelectbox [data-baseweb="select"]:hover {
-        border-color: #00f0ff !important;
-        box-shadow: 0 0 20px rgba(0, 240, 255, 0.1);
-    }
-    
-    .stSelectbox [data-baseweb="select"] div,
-    .stSelectbox [data-baseweb="select"] input,
-    .stSelectbox [data-baseweb="select"] span {
-        color: #ffffff !important;
-    }
-    
-    /* Text Inputs - CRYSTAL CLEAR */
-    .stTextInput input {
+    .stTextInput input, .stTextArea textarea {
         background: rgba(15, 15, 35, 0.8) !important;
         border: 1px solid rgba(0, 240, 255, 0.2) !important;
         border-radius: 8px !important;
         color: #ffffff !important;
         font-family: 'Courier New', monospace !important;
-        font-size: 1rem !important;
     }
-    
-    .stTextInput input:focus {
-        border-color: #00f0ff !important;
-        box-shadow: 0 0 30px rgba(0, 240, 255, 0.2) !important;
-        color: #ffffff !important;
-    }
-    
-    .stTextInput input::placeholder {
-        color: #8080a0 !important;
-    }
-    
-    /* Sliders */
-    .stSlider [data-baseweb="slider"] {
-        background: rgba(0, 240, 255, 0.1) !important;
-    }
-    
-    .stSlider [data-baseweb="slider"] div {
-        background: #00f0ff !important;
-    }
-    
-    .stSlider label {
-        color: #ffffff !important;
-        font-size: 0.95rem !important;
-    }
-    
-    /* Info, Success, Warning, Error - CRYSTAL CLEAR */
     .stAlert {
         background: rgba(15, 15, 35, 0.9) !important;
         border: 1px solid rgba(0, 240, 255, 0.2) !important;
         border-radius: 8px !important;
-        backdrop-filter: blur(5px);
-        font-family: 'Courier New', monospace !important;
     }
-    
-    .stAlert p, .stAlert div, .stAlert li, .stAlert span {
-        color: #ffffff !important;
-        font-size: 0.95rem !important;
-    }
-    
-    .stAlert svg {
-        color: #00f0ff !important;
-    }
-    
-    .stAlert .stAlertContent {
-        color: #ffffff !important;
-    }
-    
-    .stAlert .stAlertContent strong {
-        color: #ffffff !important;
-    }
-    
-    /* Progress Bar */
+    .stAlert p, .stAlert div, .stAlert li, .stAlert span { color: #ffffff !important; }
     .stProgress > div > div {
         background: linear-gradient(90deg, #00f0ff, #b026ff, #ff2d95) !important;
     }
-    
-    /* Tabs - CRYSTAL CLEAR */
     .stTabs [data-baseweb="tab-list"] {
         background: rgba(15, 15, 35, 0.8) !important;
         border: 1px solid rgba(0, 240, 255, 0.15) !important;
         border-radius: 8px !important;
     }
-    
     .stTabs [data-baseweb="tab"] {
         color: #a0a0c0 !important;
         font-family: 'Courier New', monospace !important;
         letter-spacing: 2px;
         text-transform: uppercase;
-        font-weight: 400 !important;
-        font-size: 0.85rem !important;
     }
-    
     .stTabs [data-baseweb="tab"][aria-selected="true"] {
         color: #00f0ff !important;
         border-bottom: 2px solid #00f0ff !important;
         text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
         font-weight: bold !important;
     }
-    
-    .stTabs [data-baseweb="tab"]:hover {
-        color: #ffffff !important;
-    }
-    
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: rgba(10, 10, 20, 0.5);
-    }
-    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(10, 10, 20, 0.5); }
     ::-webkit-scrollbar-thumb {
         background: linear-gradient(180deg, #00f0ff, #b026ff);
         border-radius: 3px;
     }
-    
-    ::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(180deg, #ff2d95, #b026ff);
-    }
-    
-    /* Map Container */
     .folium-map {
         border: 1px solid rgba(0, 240, 255, 0.2);
         border-radius: 12px;
         box-shadow: 0 0 40px rgba(0, 240, 255, 0.05);
     }
-    
-    /* Status Badges - CRYSTAL CLEAR */
-    .status-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-family: 'Courier New', monospace;
-        font-size: 0.8rem;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        border: 1px solid;
-        font-weight: bold !important;
-    }
-    
-    .status-badge-live {
-        color: #39ff14;
-        border-color: #39ff14;
-        box-shadow: 0 0 20px rgba(57, 255, 20, 0.2);
-        background: rgba(57, 255, 20, 0.05);
-    }
-    
-    .status-badge-fallback {
-        color: #ff2d95;
-        border-color: #ff2d95;
-        box-shadow: 0 0 20px rgba(255, 45, 149, 0.2);
-        background: rgba(255, 45, 149, 0.05);
-    }
-    
-    .status-badge-cached {
-        color: #00f0ff;
-        border-color: #00f0ff;
-        box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
-        background: rgba(0, 240, 255, 0.05);
-    }
-    
-    /* Glowing Divider */
     .cyber-divider {
         height: 1px;
         background: linear-gradient(90deg, transparent, #00f0ff, #b026ff, #ff2d95, transparent);
         margin: 20px 0;
         opacity: 0.5;
     }
-    
-    /* Scanline Effect */
-    .scanlines {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        background: repeating-linear-gradient(
-            0deg,
-            transparent,
-            transparent 2px,
-            rgba(0, 0, 0, 0.02) 2px,
-            rgba(0, 0, 0, 0.02) 4px
-        );
-        z-index: 9999;
-    }
-    
-    /* Vignette Effect */
-    .vignette {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.3) 100%);
-        z-index: 9998;
-    }
-    
-    /* Code Blocks - CRYSTAL CLEAR */
-    .stCodeBlock {
-        background: rgba(15, 15, 35, 0.8) !important;
-        border: 1px solid rgba(0, 240, 255, 0.15) !important;
-        border-radius: 8px !important;
-        color: #00f0ff !important;
-    }
-    
-    .stCodeBlock code {
-        color: #ffffff !important;
-    }
-    
-    /* Checkbox - CRYSTAL CLEAR */
-    .stCheckbox label {
-        color: #ffffff !important;
-        font-family: 'Courier New', monospace !important;
-        letter-spacing: 1px;
-        font-size: 0.95rem !important;
-    }
-    
-    .stCheckbox label:hover {
-        color: #00f0ff !important;
-    }
-    
-    .stCheckbox label span {
-        color: #ffffff !important;
-    }
-    
-    /* Markdown Text - CRYSTAL CLEAR */
     .stMarkdown p, .stMarkdown li {
         color: #ffffff !important;
         font-family: 'Courier New', monospace !important;
-        font-weight: 400 !important;
         line-height: 1.6 !important;
-        font-size: 0.95rem !important;
     }
-    
-    .stMarkdown p strong, .stMarkdown li strong {
-        color: #ffffff !important;
-        font-weight: bold !important;
-    }
-    
-    .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4 {
-        font-family: 'Courier New', monospace !important;
-        letter-spacing: 2px;
-    }
-    
     .stMarkdown h1 { color: #00f0ff !important; }
     .stMarkdown h2 { color: #b026ff !important; }
     .stMarkdown h3 { color: #ff2d95 !important; }
     .stMarkdown h4 { color: #39ff14 !important; }
-    
-    .stMarkdown ul, .stMarkdown ol {
-        color: #ffffff !important;
-    }
-    
-    .stMarkdown a {
-        color: #00f0ff !important;
-    }
-    
-    /* Caption - CRYSTAL CLEAR */
     .stCaption {
         color: #a0a0c0 !important;
         font-family: 'Courier New', monospace !important;
-        letter-spacing: 1px;
         font-size: 0.8rem !important;
     }
-    
-    /* Select Slider Labels - CRYSTAL CLEAR */
-    .stSlider label {
-        color: #ffffff !important;
-    }
-    
-    /* Info Messages - CRYSTAL CLEAR */
-    .stAlert .stAlertContent p {
-        color: #ffffff !important;
-    }
-    
-    /* Number Input - CRYSTAL CLEAR */
-    .stNumberInput input {
-        background: rgba(15, 15, 35, 0.8) !important;
-        border: 1px solid rgba(0, 240, 255, 0.2) !important;
-        border-radius: 8px !important;
-        color: #ffffff !important;
-        font-family: 'Courier New', monospace !important;
-        font-size: 1rem !important;
-    }
-    
-    .stNumberInput input:focus {
-        border-color: #00f0ff !important;
-        box-shadow: 0 0 30px rgba(0, 240, 255, 0.2) !important;
-        color: #ffffff !important;
-    }
-    
-    /* Multiselect - CRYSTAL CLEAR */
-    .stMultiSelect [data-baseweb="select"] {
-        background: rgba(15, 15, 35, 0.8) !important;
-        border: 1px solid rgba(0, 240, 255, 0.2) !important;
-        color: #ffffff !important;
-    }
-    
-    .stMultiSelect [data-baseweb="select"] div {
-        color: #ffffff !important;
-    }
-    
-    /* Date Input - CRYSTAL CLEAR */
-    .stDateInput input {
-        background: rgba(15, 15, 35, 0.8) !important;
-        border: 1px solid rgba(0, 240, 255, 0.2) !important;
-        border-radius: 8px !important;
-        color: #ffffff !important;
-    }
-    
-    /* Color Picker - CRYSTAL CLEAR */
-    .stColorPicker label {
-        color: #ffffff !important;
-    }
-    
-    /* File Uploader - CRYSTAL CLEAR */
-    .stFileUploader label {
-        color: #ffffff !important;
-    }
-    
-    /* Text Area - CRYSTAL CLEAR */
-    .stTextArea textarea {
-        background: rgba(15, 15, 35, 0.8) !important;
-        border: 1px solid rgba(0, 240, 255, 0.2) !important;
-        border-radius: 8px !important;
-        color: #ffffff !important;
-        font-family: 'Courier New', monospace !important;
-        font-size: 1rem !important;
-    }
-    
-    .stTextArea textarea:focus {
-        border-color: #00f0ff !important;
-        box-shadow: 0 0 30px rgba(0, 240, 255, 0.2) !important;
-        color: #ffffff !important;
-    }
-    
-    .stTextArea textarea::placeholder {
-        color: #8080a0 !important;
-    }
 </style>
-
-<!-- Cyberpunk Elements -->
-<div class="scanlines"></div>
-<div class="vignette"></div>
 """
 
 # ============================================================================
-# RECOMMENDATION ENGINE - NEW!
+# RECOMMENDATION ENGINE (FIXED - consistent with critical actions)
 # ============================================================================
 
 def generate_recommendation_strategy(result_data: Dict) -> Dict:
-    """
-    Generate detailed recommendation strategy based on analysis results
-    Returns prioritized recommendations with timeframes and investment levels
-    """
-    
+    """Generate recommendation strategy. Feasibility consistent with actions."""
     score = result_data.get('suitability_percentage', 0)
-    rating = result_data.get('rating', 'Unknown')
-    scores = result_data.get('scores', {})
     details = result_data.get('details', {})
     elevation_m = result_data.get('elevation_m', 0)
     flood_risk = result_data.get('flood_risk', 'Unknown')
     population_density = result_data.get('population_density', 0)
     coastal_distance = result_data.get('coastal_distance_km', 0)
-    
+
     recommendations = {
         'immediate_actions': [],
         'short_term_actions': [],
         'long_term_actions': [],
         'investment_required': 'Low',
-        'overall_feasibility': 'High'
+        'overall_feasibility': 'High',
+        'risk_level': 'Low',
     }
-    
-    # 1. ELEVATION RECOMMENDATIONS
-    if elevation_m < 20:
-        recommendations['immediate_actions'].append({
-            'text': '🚨 CRITICAL: Elevation is very low (6-14m). Build massive flood defenses and elevated launch pads immediately.',
-            'priority': 'Critical',
-            'cost': '💸💸💸💸💸'
+
+    def add_action(bucket, text, priority, cost):
+        recommendations[bucket].append({
+            'text': text, 'priority': priority, 'cost': cost
         })
+
+    # 1. ELEVATION
+    if elevation_m < 20:
+        add_action('immediate_actions',
+            '🚨 CRITICAL: Elevation is very low (<20m). Build massive flood defenses and elevated launch pads immediately.',
+            'Critical', '💸💸💸💸💸')
         recommendations['investment_required'] = 'Very High'
     elif elevation_m < 50:
-        recommendations['short_term_actions'].append({
-            'text': '🌊 Build flood defenses and drainage systems. Elevation (26-35m) is moderate - some flood protection needed.',
-            'priority': 'High',
-            'cost': '💸💸💸'
-        })
-        recommendations['investment_required'] = 'Moderate'
+        add_action('short_term_actions',
+            '🌊 Build flood defenses and drainage systems. Elevation is moderate.',
+            'High', '💸💸💸')
+        if recommendations['investment_required'] != 'Very High':
+            recommendations['investment_required'] = 'Moderate'
     elif elevation_m < 200:
-        recommendations['immediate_actions'].append({
-            'text': '✅ Excellent elevation (50-200m). No flood defenses needed. Proceed with standard launch pad design.',
-            'priority': 'Low',
-            'cost': '💸'
-        })
+        add_action('immediate_actions',
+            '✅ Excellent elevation (50-200m). No flood defenses needed. Proceed with standard launch pad design.',
+            'Low', '💸')
     elif elevation_m < 500:
-        recommendations['short_term_actions'].append({
-            'text': '⛰️ Good elevation (200-500m). Slightly high - plan for stable foundations and wind protection.',
-            'priority': 'Medium',
-            'cost': '💸💸'
-        })
+        add_action('short_term_actions',
+            '⛰️ Good elevation (200-500m). Plan for stable foundations and wind protection.',
+            'Medium', '💸💸')
     else:
-        recommendations['short_term_actions'].append({
-            'text': '🏔️ Very high elevation (500m+). Consider construction challenges and weather protection.',
-            'priority': 'Medium',
-            'cost': '💸💸💸'
-        })
-    
-    # 2. POPULATION DENSITY RECOMMENDATIONS
+        add_action('short_term_actions',
+            '🏔️ Very high elevation (500m+). Consider construction challenges and weather protection.',
+            'Medium', '💸💸💸')
+
+    # 2. POPULATION
     if population_density > 5:
-        recommendations['immediate_actions'].append({
-            'text': '🏙️ HIGH POPULATION DENSITY (5+ people/km²). Need extensive evacuation plans and safety buffer zones.',
-            'priority': 'Critical',
-            'cost': '💸💸💸💸'
-        })
+        add_action('immediate_actions',
+            '🏙️ HIGH POPULATION DENSITY. Need extensive evacuation plans and safety buffer zones.',
+            'Critical', '💸💸💸💸')
     elif population_density > 2:
-        recommendations['short_term_actions'].append({
-            'text': '🏘️ MODERATE POPULATION (2-5 people/km²). Develop evacuation procedures and community engagement.',
-            'priority': 'High',
-            'cost': '💸💸💸'
-        })
+        add_action('short_term_actions',
+            '🏘️ MODERATE POPULATION. Develop evacuation procedures and community engagement.',
+            'High', '💸💸💸')
     else:
-        recommendations['immediate_actions'].append({
-            'text': '✅ VERY LOW POPULATION (<2 people/km²). Ideal for spaceport - minimal evacuation required.',
-            'priority': 'Low',
-            'cost': '💸'
-        })
-    
-    # 3. COASTAL PROXIMITY RECOMMENDATIONS
+        add_action('immediate_actions',
+            '✅ VERY LOW POPULATION. Ideal for spaceport - minimal evacuation required.',
+            'Low', '💸')
+
+    # 3. COASTAL
     if coastal_distance < 5:
-        recommendations['immediate_actions'].append({
-            'text': '🌊 PERFECT COASTAL ACCESS (0-5km). Leverage sea transport for heavy equipment. Clear ocean launch trajectory.',
-            'priority': 'Low',
-            'cost': '💸'
-        })
+        add_action('immediate_actions',
+            '🌊 PERFECT COASTAL ACCESS. Leverage sea transport for heavy equipment.',
+            'Low', '💸')
     elif coastal_distance < 30:
-        recommendations['short_term_actions'].append({
-            'text': '🚢 GOOD COASTAL ACCESS (5-30km). Build access roads to the coast. Consider sea transport hub.',
-            'priority': 'Medium',
-            'cost': '💸💸'
-        })
+        add_action('short_term_actions',
+            '🚢 GOOD COASTAL ACCESS. Build access roads to the coast. Consider sea transport hub.',
+            'Medium', '💸💸')
     else:
-        recommendations['long_term_actions'].append({
-            'text': '🚛 INLAND LOCATION (30+km from coast). Significant transport infrastructure needed. Consider building a port.',
-            'priority': 'High',
-            'cost': '💸💸💸💸'
-        })
-    
-    # 4. INFRASTRUCTURE RECOMMENDATIONS
+        add_action('long_term_actions',
+            '🚛 INLAND LOCATION. Significant transport infrastructure needed.',
+            'High', '💸💸💸💸')
+
+    # 4. INFRASTRUCTURE
     infra_details = details.get('infrastructure_access', {}).get('value', {})
     if isinstance(infra_details, dict):
-        has_airport = infra_details.get('airports', 0) > 0
-        has_roads = infra_details.get('major_roads', 0) > 0
-        has_port = infra_details.get('ports', 0) > 0
-        has_power = infra_details.get('power_facilities', 0) > 0
-        
-        if not has_airport:
-            recommendations['short_term_actions'].append({
-                'text': '✈️ No airport nearby. Build airstrip for personnel transport.',
-                'priority': 'High',
-                'cost': '💸💸💸'
-            })
-        if not has_roads:
-            recommendations['short_term_actions'].append({
-                'text': '🛣️ No major roads. Build access roads for equipment transport.',
-                'priority': 'High',
-                'cost': '💸💸💸'
-            })
-        if not has_port:
-            recommendations['long_term_actions'].append({
-                'text': '🚢 No port. Consider building a small port for heavy equipment delivery.',
-                'priority': 'Medium',
-                'cost': '💸💸💸💸'
-            })
-        if not has_power:
-            recommendations['long_term_actions'].append({
-                'text': '⚡ No power infrastructure. Build power plant or connect to grid.',
-                'priority': 'High',
-                'cost': '💸💸💸💸'
-            })
-    
-    # 5. LAND AVAILABILITY RECOMMENDATIONS
+        if infra_details.get('airports', 0) == 0:
+            add_action('short_term_actions',
+                '✈️ No airport nearby. Build airstrip for personnel transport.',
+                'High', '💸💸💸')
+        if infra_details.get('major_roads', 0) == 0:
+            add_action('short_term_actions',
+                '🛣️ No major roads. Build access roads for equipment transport.',
+                'High', '💸💸💸')
+        if infra_details.get('ports', 0) == 0:
+            add_action('long_term_actions',
+                '🚢 No port. Consider building a small port for heavy equipment delivery.',
+                'Medium', '💸💸💸💸')
+        if infra_details.get('power_facilities', 0) == 0:
+            add_action('long_term_actions',
+                '⚡ No power infrastructure. Build power plant or connect to grid.',
+                'High', '💸💸💸💸')
+
+    # 5. LAND
     land_details = details.get('land_availability', {}).get('value', {})
     if isinstance(land_details, dict):
         forest = land_details.get('forest_areas', 0)
         developed = land_details.get('developed_areas', 0)
-        
         if forest > 20 and developed < 5:
-            recommendations['immediate_actions'].append({
-                'text': '🌳 ABUNDANT LAND (20+ forest areas). Excellent for expansion. Ready for development.',
-                'priority': 'Low',
-                'cost': '💸'
-            })
+            add_action('immediate_actions',
+                '🌳 ABUNDANT LAND. Excellent for expansion. Ready for development.',
+                'Low', '💸')
         elif forest > 10 and developed < 10:
-            recommendations['short_term_actions'].append({
-                'text': '🌿 GOOD LAND AVAILABILITY. Plan for expansion and buffer zones.',
-                'priority': 'Medium',
-                'cost': '💸💸'
-            })
+            add_action('short_term_actions',
+                '🌿 GOOD LAND AVAILABILITY. Plan for expansion and buffer zones.',
+                'Medium', '💸💸')
         else:
-            recommendations['immediate_actions'].append({
-                'text': '🏗️ LIMITED LAND. Need to acquire additional land for launch pads and safety zones.',
-                'priority': 'Critical',
-                'cost': '💸💸💸💸'
-            })
-    
-    # 6. FLOOD RISK RECOMMENDATIONS
+            add_action('immediate_actions',
+                '🏗️ LIMITED LAND. Need to acquire additional land for launch pads and safety zones.',
+                'Critical', '💸💸💸💸')
+
+    # 6. FLOOD
     if flood_risk == 'High':
-        recommendations['immediate_actions'].append({
-            'text': '🌊 HIGH FLOOD RISK! Emergency flood defenses needed. Consider elevating all structures.',
-            'priority': 'Critical',
-            'cost': '💸💸💸💸💸'
-        })
+        add_action('immediate_actions',
+            '🌊 HIGH FLOOD RISK! Emergency flood defenses needed. Consider elevating all structures.',
+            'Critical', '💸💸💸💸💸')
         recommendations['investment_required'] = 'Very High'
     elif flood_risk == 'Moderate':
-        recommendations['short_term_actions'].append({
-            'text': '🌊 MODERATE FLOOD RISK. Build standard flood defenses and drainage systems.',
-            'priority': 'High',
-            'cost': '💸💸💸'
-        })
+        add_action('short_term_actions',
+            '🌊 MODERATE FLOOD RISK. Build standard flood defenses and drainage systems.',
+            'High', '💸💸💸')
         if recommendations['investment_required'] != 'Very High':
             recommendations['investment_required'] = 'Moderate'
-    
-    # 7. LATITUDE RECOMMENDATIONS
+
+    # 7. LATITUDE
     lat_deg = result_data.get('lat_deg', 0)
     if lat_deg < 3:
-        recommendations['immediate_actions'].append({
-            'text': f'🌐 EXCELLENT LATITUDE ({lat_deg:.1f}°). Near equator - maximum fuel efficiency! ✅',
-            'priority': 'Low',
-            'cost': '💸'
-        })
+        add_action('immediate_actions',
+            f'🌐 EXCELLENT LATITUDE ({lat_deg:.1f}°). Near equator - maximum fuel efficiency! ✅',
+            'Low', '💸')
     elif lat_deg < 5:
-        recommendations['immediate_actions'].append({
-            'text': f'🌐 GOOD LATITUDE ({lat_deg:.1f}°). Good launch efficiency.',
-            'priority': 'Low',
-            'cost': '💸'
-        })
+        add_action('immediate_actions',
+            f'🌐 GOOD LATITUDE ({lat_deg:.1f}°). Good launch efficiency.',
+            'Low', '💸')
     else:
-        recommendations['short_term_actions'].append({
-            'text': f'🌐 MODERATE LATITUDE ({lat_deg:.1f}°). Optimize launch trajectories for fuel efficiency.',
-            'priority': 'Medium',
-            'cost': '💸💸'
-        })
-    
-    # OVERALL FEASIBILITY
+        add_action('short_term_actions',
+            f'🌐 MODERATE LATITUDE ({lat_deg:.1f}°). Optimize launch trajectories for fuel efficiency.',
+            'Medium', '💸💸')
+
+    # ================= FIXED FEASIBILITY LOGIC =================
+    critical_count = sum(
+        1 for a in recommendations['immediate_actions']
+        if a['priority'] == 'Critical'
+    )
+    high_count = sum(
+        1 for a in recommendations['short_term_actions']
+        if a['priority'] == 'High'
+    )
+    total_actions = (
+        len(recommendations['immediate_actions'])
+        + len(recommendations['short_term_actions'])
+        + len(recommendations['long_term_actions'])
+    )
+
     if score >= 80:
-        recommendations['overall_feasibility'] = '✅ Excellent - High potential for immediate development'
+        score_band, score_emoji = 'Excellent', '✅'
     elif score >= 65:
-        recommendations['overall_feasibility'] = '👍 Good - Suitable with minor site preparation'
+        score_band, score_emoji = 'Good', '👍'
     elif score >= 50:
-        recommendations['overall_feasibility'] = '👌 Moderate - Significant investment required'
+        score_band, score_emoji = 'Moderate', '👌'
     elif score >= 35:
-        recommendations['overall_feasibility'] = '⚠️ Limited - Major investment required'
+        score_band, score_emoji = 'Limited', '⚠️'
     else:
-        recommendations['overall_feasibility'] = '❌ Poor - Not recommended for spaceport development'
-    
-    # Add timeline summary
+        score_band, score_emoji = 'Poor', '❌'
+
+    # Critical overrides — feasibility can never exceed what Critical actions permit
+    if critical_count >= 3:
+        feasibility = '❌ Poor - Major critical issues must be resolved before development'
+        risk_level = 'Very High'
+    elif critical_count == 2:
+        feasibility = '⚠️ Limited - Multiple critical issues require resolution'
+        risk_level = 'High'
+    elif critical_count == 1:
+        feasibility = '👌 Moderate - One critical issue requires resolution'
+        risk_level = 'High'
+    elif high_count >= 2:
+        feasibility = '👌 Moderate - Several high-priority preparations required'
+        risk_level = 'Medium'
+    else:
+        feasibility = f'{score_emoji} {score_band} - ' + {
+            'Excellent': 'High potential for immediate development',
+            'Good': 'Suitable with minor site preparation',
+            'Moderate': 'Significant investment required',
+            'Limited': 'Major investment required',
+            'Poor': 'Not recommended for spaceport development',
+        }[score_band]
+        risk_level = {
+            'Excellent': 'Low', 'Good': 'Low',
+            'Moderate': 'Medium', 'Limited': 'High', 'Poor': 'Very High',
+        }[score_band]
+
+    recommendations['overall_feasibility'] = feasibility
+    recommendations['risk_level'] = risk_level
+    recommendations['critical_action_count'] = critical_count
+    recommendations['high_action_count'] = high_count
+    recommendations['total_action_count'] = total_actions
+
     recommendations['timeline_summary'] = {
         'immediate': f"{len(recommendations['immediate_actions'])} actions (0-6 months)",
         'short_term': f"{len(recommendations['short_term_actions'])} actions (6-18 months)",
         'long_term': f"{len(recommendations['long_term_actions'])} actions (18-36 months)"
     }
-    
     return recommendations
 
 # ============================================================================
@@ -934,38 +512,37 @@ class APICache:
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(exist_ok=True)
         self.ttl = timedelta(hours=ttl_hours)
-    
+
     def _get_cache_key(self, url: str, params: Dict) -> str:
         key_str = url + json.dumps(params, sort_keys=True)
         return hashlib.md5(key_str.encode()).hexdigest()
-    
+
     def get(self, url: str, params: Dict) -> Optional[Dict]:
         cache_key = self._get_cache_key(url, params)
         cache_file = self.cache_dir / f"{cache_key}.json"
-        
         if cache_file.exists():
             modified_time = datetime.fromtimestamp(cache_file.stat().st_mtime)
             if datetime.now() - modified_time < self.ttl:
                 try:
                     with open(cache_file, 'r') as f:
                         return json.load(f)
-                except:
+                except Exception:
                     return None
         return None
-    
+
     def set(self, url: str, params: Dict, data: Dict) -> None:
         cache_key = self._get_cache_key(url, params)
         cache_file = self.cache_dir / f"{cache_key}.json"
         try:
             with open(cache_file, 'w') as f:
                 json.dump(data, f)
-        except:
+        except Exception:
             pass
-    
+
     def clear(self):
         for f in self.cache_dir.glob("*.json"):
             f.unlink()
-    
+
     def get_stats(self) -> Dict:
         files = list(self.cache_dir.glob("*.json"))
         return {'total_cached': len(files), 'cache_dir': str(self.cache_dir)}
@@ -977,7 +554,6 @@ api_cache = APICache()
 # ============================================================================
 
 SABAH_LOCATIONS = {
-    # === West Coast Division ===
     'Kota Kinabalu City Center': (5.9804, 116.0735),
     'KK Waterfront': (5.9850, 116.0750),
     'Tanjung Aru Beach': (5.9400, 116.0500),
@@ -1009,8 +585,6 @@ SABAH_LOCATIONS = {
     'Likas': (5.9600, 116.0300),
     'Luyang': (5.9300, 116.0700),
     'Donggongon': (5.9000, 116.0900),
-    
-    # === Interior Division ===
     'Keningau': (5.3300, 116.1600),
     'Tenom': (5.1300, 115.9500),
     'Beaufort': (5.3500, 115.7500),
@@ -1027,8 +601,6 @@ SABAH_LOCATIONS = {
     'Klias': (5.4300, 115.6800),
     'Limbawang': (5.1700, 115.5800),
     'Gana': (5.0300, 115.4800),
-    
-    # === Kudat Division ===
     'Kudat': (6.8860, 116.8430),
     'Kota Marudu': (6.5000, 116.7400),
     'Pitas': (6.7200, 117.0700),
@@ -1040,8 +612,6 @@ SABAH_LOCATIONS = {
     'Tindakon': (6.8700, 116.8500),
     'Pinangsoo': (6.9200, 116.8800),
     'Perancangan': (6.9500, 116.9000),
-    
-    # === Sandakan Division ===
     'Sandakan City Center': (5.8400, 118.1200),
     'Sandakan Waterfront': (5.8420, 118.1220),
     'Sandakan Hospital': (5.8480, 118.1250),
@@ -1060,8 +630,6 @@ SABAH_LOCATIONS = {
     'Bilit': (5.4200, 117.8200),
     'Abai': (5.3500, 117.6800),
     'Batu Bulan': (5.2800, 117.5800),
-    
-    # === Tawau Division ===
     'Tawau City Center': (4.2435, 117.8853),
     'Tawau Waterfront': (4.2450, 117.8870),
     'Tawau Hospital': (4.2520, 117.8970),
@@ -1085,8 +653,6 @@ SABAH_LOCATIONS = {
     'Umas Umas': (4.1500, 117.5800),
     'Bombalai': (4.1200, 117.4800),
     'Tanjung Batu': (4.0500, 117.3800),
-    
-    # === Mountainous Areas ===
     'Mount Kinabalu': (6.0750, 116.5583),
     'Kinabalu National Park': (6.0100, 116.5400),
     'Kundasang': (5.9800, 116.5700),
@@ -1099,8 +665,6 @@ SABAH_LOCATIONS = {
     'Long Pasia': (4.4000, 115.7500),
     'Kipungit': (6.0200, 116.6200),
     'Eastern Sabah Hills': (5.0000, 117.8500),
-    
-    # === Islands ===
     'Pulau Gaya': (5.9800, 116.0200),
     'Pulau Manukan': (5.9700, 116.0000),
     'Pulau Mamutik': (5.9600, 115.9900),
@@ -1122,7 +686,6 @@ SABAH_LOCATIONS = {
 # ============================================================================
 
 SARAWAK_LOCATIONS = {
-    # === Kuching Division ===
     'Kuching City Center': (1.5497, 110.3633),
     'Kuching Waterfront': (1.5597, 110.3433),
     'Kuching Hospital': (1.5697, 110.3533),
@@ -1149,8 +712,6 @@ SARAWAK_LOCATIONS = {
     'Jalan Batu Kawa': (1.5000, 110.3000),
     'Matang': (1.6200, 110.1800),
     'Kuching Wetlands': (1.5800, 110.3200),
-    
-    # === Samarahan Division ===
     'Kota Samarahan': (1.4500, 110.5000),
     'Asajaya': (1.6000, 110.6200),
     'Simunjan': (1.3800, 110.7500),
@@ -1158,8 +719,6 @@ SARAWAK_LOCATIONS = {
     'Sadong Jaya': (1.4700, 110.7300),
     'Muaras': (1.5300, 110.5800),
     'Semera': (1.4200, 110.4800),
-    
-    # === Sri Aman Division ===
     'Sri Aman': (1.2000, 111.5000),
     'Lubok Antu': (1.0500, 111.8300),
     'Engkilili': (1.1300, 111.6700),
@@ -1167,8 +726,6 @@ SARAWAK_LOCATIONS = {
     'Lingga': (1.3300, 111.1500),
     'Balai Ringin': (1.0300, 111.1500),
     'Rimbang': (1.1000, 111.3000),
-    
-    # === Betong Division ===
     'Betong': (1.4100, 111.5300),
     'Debak': (1.5600, 111.4200),
     'Pusa': (1.4800, 111.3000),
@@ -1176,8 +733,6 @@ SARAWAK_LOCATIONS = {
     'Spaoh': (1.4500, 111.4500),
     'Maludam': (1.6500, 111.2500),
     'Roban': (1.6800, 111.3800),
-    
-    # === Sarikei Division ===
     'Sarikei': (2.1000, 111.8000),
     'Bintangor': (2.1500, 111.9000),
     'Julau': (2.0200, 111.9100),
@@ -1185,8 +740,6 @@ SARAWAK_LOCATIONS = {
     'Matu': (2.1000, 111.5300),
     'Daro': (2.0500, 111.4800),
     'Jakar': (2.0800, 111.6500),
-    
-    # === Sibu Division ===
     'Sibu City Center': (2.2871, 111.8301),
     'Sibu Waterfront': (2.2971, 111.8201),
     'Sibu Hospital': (2.2971, 111.8401),
@@ -1199,8 +752,6 @@ SARAWAK_LOCATIONS = {
     'Nanga Dap': (2.3200, 112.1000),
     'Durin': (2.2000, 111.9000),
     'Sungei Bidut': (2.2500, 111.7500),
-    
-    # === Mukah Division ===
     'Mukah': (2.9064, 112.0800),
     'Dalat': (2.7500, 111.9700),
     'Oya': (2.8500, 111.8500),
@@ -1208,8 +759,6 @@ SARAWAK_LOCATIONS = {
     'Tanjung Manis': (2.7100, 111.6200),
     'Igan': (2.8200, 111.7500),
     'Ladang': (2.7800, 112.0500),
-    
-    # === Kapit Division ===
     'Kapit': (2.0000, 112.5000),
     'Song': (2.0100, 112.5400),
     'Belaga': (2.7000, 113.7800),
@@ -1218,8 +767,6 @@ SARAWAK_LOCATIONS = {
     'Baleh': (2.3000, 113.2000),
     'Nanga Merit': (1.8000, 112.8000),
     'Rumah Siga': (2.2000, 113.0000),
-    
-    # === Bintulu Division ===
     'Bintulu City Center': (3.1746, 113.0316),
     'Bintulu Waterfront': (3.1846, 113.0216),
     'Bintulu Hospital': (3.1846, 113.0416),
@@ -1231,8 +778,6 @@ SARAWAK_LOCATIONS = {
     'Tubau': (3.1800, 113.1300),
     'Jepak': (3.1500, 112.9800),
     'Kemena': (3.2000, 113.0000),
-    
-    # === Miri Division ===
     'Miri City Center': (4.3995, 113.9918),
     'Miri Waterfront': (4.4095, 113.9818),
     'Miri Hospital': (4.4095, 113.9918),
@@ -1250,8 +795,6 @@ SARAWAK_LOCATIONS = {
     'Sungai Tujoh': (4.5000, 113.9500),
     'Piasau': (4.4200, 113.9800),
     'Permyjaya': (4.4500, 114.0000),
-    
-    # === Limbang Division ===
     'Limbang': (4.7500, 115.0000),
     'Lawas': (4.8500, 115.4000),
     'Sundar': (4.7200, 115.5800),
@@ -1266,8 +809,6 @@ SARAWAK_LOCATIONS = {
     'Wind Cave': (4.0400, 114.9000),
     'Tebangan': (4.8000, 115.1000),
     'Merapok': (4.8300, 115.3500),
-    
-    # === Highlands ===
     'Bario Highlands': (3.7300, 115.4700),
     'Ba Kelalan Highlands': (3.9700, 115.6200),
     'Long Pasia': (4.4000, 115.7500),
@@ -1288,11 +829,10 @@ BORNEO_LOCATIONS = {
 }
 
 # ============================================================================
-# SPACEPORT CANDIDATES (Expanded)
+# SPACEPORT CANDIDATES
 # ============================================================================
 
 SPACEPORT_CANDIDATES = {
-    # === SABAH (Best candidates) ===
     'Kudat Peninsula, Sabah': (6.8860, 116.8430),
     'Sandakan Coast, Sabah': (5.8400, 118.1200),
     'Tawau Hills, Sabah': (4.2435, 117.8853),
@@ -1316,8 +856,6 @@ SPACEPORT_CANDIDATES = {
     'Tabin, Sabah': (5.2000, 118.6500),
     'Banggi Island, Sabah': (7.2300, 117.1700),
     'Eastern Sabah Hills, Sabah': (5.0000, 117.8500),
-    
-    # === SARAWAK (Secondary candidates) ===
     'Miri Coast, Sarawak': (4.3995, 113.9918),
     'Bintulu Coast, Sarawak': (3.1746, 113.0316),
     'Lawas Coast, Sarawak': (4.8500, 115.4000),
@@ -1338,11 +876,10 @@ SPACEPORT_CANDIDATES = {
 }
 
 # ============================================================================
-# STATIC FALLBACK DATA (Expanded for Complete Coverage)
+# STATIC FALLBACK DATA
 # ============================================================================
 
 STATIC_AIRPORTS = {
-    # === SABAH AIRPORTS ===
     'Kota Kinabalu International': (5.9375, 116.0490),
     'Sandakan Airport': (5.9010, 118.0580),
     'Tawau Airport': (4.3133, 117.9183),
@@ -1363,8 +900,6 @@ STATIC_AIRPORTS = {
     'Papar Airport': (5.7300, 115.9300),
     'Tuaran Airport': (6.1800, 116.2400),
     'Pulau Sipadan Airport': (4.1140, 118.6250),
-    
-    # === SARAWAK AIRPORTS ===
     'Kuching International': (1.4843, 110.3469),
     'Miri Airport': (4.3223, 113.9868),
     'Sibu Airport': (2.2586, 111.9661),
@@ -1399,7 +934,6 @@ STATIC_AIRPORTS = {
 }
 
 STATIC_SETTLEMENTS = {
-    # === SABAH SETTLEMENTS ===
     'Kota Kinabalu': {'coords': (5.9804, 116.0735), 'population': 500000},
     'Sandakan': {'coords': (5.8400, 118.1200), 'population': 150000},
     'Tawau': {'coords': (4.2435, 117.8853), 'population': 120000},
@@ -1422,8 +956,6 @@ STATIC_SETTLEMENTS = {
     'Telupid': {'coords': (5.6300, 117.1300), 'population': 4000},
     'Beluran': {'coords': (5.8800, 117.5600), 'population': 5000},
     'Kinabatangan': {'coords': (5.4000, 117.8000), 'population': 3000},
-    
-    # === SARAWAK SETTLEMENTS ===
     'Kuching': {'coords': (1.5497, 110.3633), 'population': 600000},
     'Miri': {'coords': (4.3995, 113.9918), 'population': 300000},
     'Sibu': {'coords': (2.2871, 111.8301), 'population': 200000},
@@ -1451,10 +983,6 @@ STATIC_SETTLEMENTS = {
     'Song': {'coords': (2.0100, 112.5400), 'population': 3000},
     'Belaga': {'coords': (2.7000, 113.7800), 'population': 2000},
 }
-
-# ============================================================================
-# SPACEPORT FACILITY TAGS
-# ============================================================================
 
 SPACEPORT_FACILITY_TAGS = {
     'hospital': [('amenity', 'hospital'), ('amenity', 'clinic')],
@@ -1497,7 +1025,7 @@ class AnalysisResult:
     timestamp: str = ""
     success: bool = False
 
-@dataclass 
+@dataclass
 class MemoryEntry:
     query: str
     query_embedding: List[float] = field(default_factory=list)
@@ -1515,7 +1043,7 @@ class MemoryRepository:
     def __init__(self, db_path: str = "borneo_spaceport_memory.db"):
         self.db_path = db_path
         self._init_database()
-    
+
     def _init_database(self):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -1545,13 +1073,13 @@ class MemoryRepository:
         """)
         conn.commit()
         conn.close()
-    
+
     def store_analysis(self, entry: MemoryEntry):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         query_hash = hashlib.md5(entry.query.lower().encode()).hexdigest()
         cursor.execute("""
-            INSERT INTO analysis_memory 
+            INSERT INTO analysis_memory
             (query, query_hash, result_summary, success, execution_time, parameters, timestamp, embedding)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """, (
@@ -1566,7 +1094,7 @@ class MemoryRepository:
         ))
         conn.commit()
         conn.close()
-    
+
     def get_all_analyses(self, limit: int = 20) -> List[Dict]:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -1584,7 +1112,7 @@ class MemoryRepository:
             })
         conn.close()
         return results
-    
+
     def find_similar_analyses(self, query: str, limit: int = 5) -> List[Dict]:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -1611,7 +1139,7 @@ class MemoryRepository:
         conn.close()
         results.sort(key=lambda x: x['match_score'], reverse=True)
         return results[:limit]
-    
+
     def get_learned_parameter(self, analysis_type: str, parameter_name: str) -> Optional[str]:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -1623,8 +1151,8 @@ class MemoryRepository:
         row = cursor.fetchone()
         conn.close()
         return row[0] if row else None
-    
-    def update_learned_parameter(self, analysis_type: str, parameter_name: str, 
+
+    def update_learned_parameter(self, analysis_type: str, parameter_name: str,
                                   value: str, success: bool):
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -1637,19 +1165,19 @@ class MemoryRepository:
             new_count = row[2] + 1
             new_rate = ((row[1] * row[2]) + (1 if success else 0)) / new_count
             cursor.execute("""
-                UPDATE learned_parameters 
+                UPDATE learned_parameters
                 SET success_rate = ?, usage_count = ?, last_updated = ?
                 WHERE id = ?
             """, (new_rate, new_count, datetime.now().isoformat(), row[0]))
         else:
             cursor.execute("""
-                INSERT INTO learned_parameters 
+                INSERT INTO learned_parameters
                 (analysis_type, parameter_name, optimal_value, success_rate, usage_count, last_updated)
                 VALUES (?, ?, ?, ?, 1, ?)
             """, (analysis_type, parameter_name, value, 1.0 if success else 0.0, datetime.now().isoformat()))
         conn.commit()
         conn.close()
-    
+
     def get_analysis_stats(self) -> Dict:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
@@ -1675,29 +1203,23 @@ class AnalysisStrategy(ABC):
     @abstractmethod
     def analyse(self, location: Location, params: Dict) -> Dict:
         pass
-    
+
     @abstractmethod
     def get_name(self) -> str:
         pass
 
 class SpaceportSuitabilityStrategy(AnalysisStrategy):
-    """
-    HYBRID Strategy: INSTANT geographic rules + Live OSM in background
-    """
-    
+    """HYBRID Strategy: INSTANT geographic rules + Live OSM in background"""
+
     def get_name(self) -> str:
         return "Spaceport Suitability Analysis (HYBRID)"
-    
-    # ============ INSTANT GEOGRAPHIC RULES (3-5 seconds) ============
-    
+
     def _get_elevation_quick(self, location: Location) -> tuple:
-        """Get elevation with 3-second timeout"""
         try:
             elevation_url = f"https://api.open-elevation.com/api/v1/lookup?locations={location.lat},{location.lon}"
             response = requests.get(elevation_url, timeout=3)
             data = response.json()
             elev = data['results'][0]['elevation']
-            
             if 50 <= elev <= 200:
                 return 5.0, elev, 'Live Elevation API'
             elif 200 < elev <= 500:
@@ -1708,8 +1230,7 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
                 return 2.0, elev, 'Live Elevation API'
             else:
                 return 3.0, elev, 'Live Elevation API'
-        except:
-            # INSTANT fallback
+        except Exception:
             lat, lon = location.lat, location.lon
             if lat > 5.8 and lat < 6.2 and lon > 116.4 and lon < 116.8:
                 return 4.5, 1500, 'Fallback: Kinabalu region'
@@ -1719,9 +1240,8 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
                 return 3.5, 200, 'Fallback: Sarawak interior'
             else:
                 return 3.0, 50, 'Fallback: Lowland area'
-    
+
     def _geographic_score_coastal(self, location: Location) -> tuple:
-        """INSTANT coastal score - no API call"""
         lat, lon = location.lat, location.lon
         if lon > 117.5:
             return 5.0, 0, 'Geographic: East coast'
@@ -1733,16 +1253,14 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             return 3.0, 30, 'Geographic: Inland'
         else:
             return 2.0, 50, 'Geographic: Interior'
-    
+
     def _geographic_score_population(self, location: Location) -> tuple:
-        """INSTANT population score - no API call"""
         lat, lon = location.lat, location.lon
         min_dist = 999
         for name, data in STATIC_SETTLEMENTS.items():
             s_lat, s_lon = data['coords']
             dist = self._haversine(lat, lon, s_lat, s_lon)
             min_dist = min(min_dist, dist)
-        
         if min_dist > 80:
             return 5.0, 0, 'Geographic: Remote'
         elif min_dist > 50:
@@ -1753,23 +1271,20 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             return 2.0, 5, 'Geographic: Near town'
         else:
             return 1.0, 10, 'Geographic: Near city'
-    
+
     def _geographic_score_infrastructure(self, location: Location) -> tuple:
-        """INSTANT infrastructure score - no API call"""
         lat, lon = location.lat, location.lon
         min_dist = 999
         for name, coords in STATIC_AIRPORTS.items():
             a_lat, a_lon = coords
             dist = self._haversine(lat, lon, a_lat, a_lon)
             min_dist = min(min_dist, dist)
-        
         details = {
             'airports': 1 if min_dist < 60 else 0,
             'major_roads': 2 if min_dist < 30 else 0,
             'ports': 0,
             'power_facilities': 0
         }
-        
         if min_dist < 30:
             return 4.5, details, 'Geographic: Near airport'
         elif min_dist < 60:
@@ -1778,22 +1293,19 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             return 2.5, details, 'Geographic: Some access'
         else:
             return 1.5, details, 'Geographic: Remote'
-    
+
     def _geographic_score_land(self, location: Location) -> tuple:
-        """INSTANT land availability score - no API call"""
         lat, lon = location.lat, location.lon
         min_dist = 999
         for name, data in STATIC_SETTLEMENTS.items():
             s_lat, s_lon = data['coords']
             dist = self._haversine(lat, lon, s_lat, s_lon)
             min_dist = min(min_dist, dist)
-        
         details = {
             'forest_areas': 30 if min_dist > 50 else 10,
             'developed_areas': 2 if min_dist > 50 else 10,
             'agriculture': 5
         }
-        
         if min_dist > 80:
             return 5.0, details, 'Geographic: Abundant land'
         elif min_dist > 50:
@@ -1804,7 +1316,7 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             return 2.0, details, 'Geographic: Limited land'
         else:
             return 1.0, details, 'Geographic: Scarce land'
-    
+
     def _geographic_score_flood(self, elevation_m: float) -> tuple:
         if elevation_m > 100:
             return 5.0, 'Low'
@@ -1814,7 +1326,7 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             return 3.0, 'Moderate'
         else:
             return 1.5, 'High'
-    
+
     def _score_latitudinal_advantage(self, lat: float) -> float:
         abs_lat = abs(lat)
         if abs_lat <= 1:
@@ -1829,23 +1341,18 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             return 2.0
         else:
             return 1.0
-    
+
     def _haversine(self, lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         R = 6371
         dlat = math.radians(lat2 - lat1)
         dlon = math.radians(lon2 - lon1)
         a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
         return R * 2 * math.asin(min(1, math.sqrt(a)))
-    
-    # ============ OSM BACKGROUND (up-to-date) ============
-    
+
     def _try_osm_in_background(self, location: Location, radius: int) -> Optional[Dict]:
-        """Try OSM queries with 5-second timeout - UP-TO-DATE"""
         try:
             overpass_url = "https://overpass-api.de/api/interpreter"
             results = {}
-            
-            # Airports
             query = f"""
             [out:json][timeout:5];
             (
@@ -1857,8 +1364,6 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             response = requests.post(overpass_url, data={'data': query}, timeout=5)
             data = response.json()
             results['airport_count'] = len(data.get('elements', []))
-            
-            # Settlements
             query = f"""
             [out:json][timeout:5];
             (
@@ -1869,8 +1374,6 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             response = requests.post(overpass_url, data={'data': query}, timeout=5)
             data = response.json()
             results['settlement_count'] = len(data.get('elements', []))
-            
-            # Roads
             query = f"""
             [out:json][timeout:5];
             (
@@ -1881,8 +1384,6 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             response = requests.post(overpass_url, data={'data': query}, timeout=5)
             data = response.json()
             results['road_count'] = len(data.get('elements', []))
-            
-            # Coastline
             query = f"""
             [out:json][timeout:5];
             (
@@ -1893,20 +1394,11 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             response = requests.post(overpass_url, data={'data': query}, timeout=5)
             data = response.json()
             results['coastline_count'] = len(data.get('elements', []))
-            
             return results
-            
-        except:
+        except Exception:
             return None
-    
-    # ============ MAIN ANALYSIS ============
-    
+
     def analyse(self, location: Location, params: Dict) -> Dict:
-        """
-        HYBRID analysis:
-        1. INSTANT geographic rules (3-5 seconds)
-        2. OSM background (up-to-date)
-        """
         radius = params.get('radius', 10000)
         weights = params.get('weights', {
             'elevation': 0.15,
@@ -1917,21 +1409,18 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             'flood_risk': 0.10,
             'latitudinal_advantage': 0.10
         })
-        
-        # ============ INSTANT RESULTS (3-5 seconds) ============
-        
+
         scores = {}
         details = {}
         data_sources = []
         data_source_details = []
         osm_data = None
         osm_available = False
-        
-        # 1. ELEVATION (quick API or fallback)
+
+        # 1. ELEVATION
         elevation_score, elevation_m, elev_source = self._get_elevation_quick(location)
         data_sources.append(elev_source)
         data_source_details.append(f"Elevation: {elev_source}")
-        
         scores['elevation'] = elevation_score
         details['elevation'] = {
             'score': elevation_score,
@@ -1939,12 +1428,11 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             'weight': weights['elevation'],
             'source': elev_source
         }
-        
-        # 2. POPULATION (INSTANT - geographic)
+
+        # 2. POPULATION
         pop_score, pop_density, pop_source = self._geographic_score_population(location)
         data_sources.append(pop_source)
         data_source_details.append(f"Population: {pop_source}")
-        
         scores['population_density'] = pop_score
         details['population_density'] = {
             'score': pop_score,
@@ -1952,12 +1440,11 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             'weight': weights['population_density'],
             'source': pop_source
         }
-        
-        # 3. COASTAL (INSTANT - geographic)
+
+        # 3. COASTAL
         coastal_score, distance_to_coast, coastal_source = self._geographic_score_coastal(location)
         data_sources.append(coastal_source)
         data_source_details.append(f"Coastal: {coastal_source}")
-        
         scores['coastal_proximity'] = coastal_score
         details['coastal_proximity'] = {
             'score': coastal_score,
@@ -1965,12 +1452,11 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             'weight': weights['coastal_proximity'],
             'source': coastal_source
         }
-        
-        # 4. INFRASTRUCTURE (INSTANT - geographic)
+
+        # 4. INFRASTRUCTURE
         infra_score, infra_details, infra_source = self._geographic_score_infrastructure(location)
         data_sources.append(infra_source)
         data_source_details.append(f"Infrastructure: {infra_source}")
-        
         scores['infrastructure_access'] = infra_score
         details['infrastructure_access'] = {
             'score': infra_score,
@@ -1978,12 +1464,11 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             'weight': weights['infrastructure_access'],
             'source': infra_source
         }
-        
-        # 5. LAND AVAILABILITY (INSTANT - geographic)
+
+        # 5. LAND
         land_score, land_details, land_source = self._geographic_score_land(location)
         data_sources.append(land_source)
         data_source_details.append(f"Land: {land_source}")
-        
         scores['land_availability'] = land_score
         details['land_availability'] = {
             'score': land_score,
@@ -1991,8 +1476,8 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             'weight': weights['land_availability'],
             'source': land_source
         }
-        
-        # 6. FLOOD RISK
+
+        # 6. FLOOD
         flood_score, flood_risk = self._geographic_score_flood(elevation_m)
         scores['flood_risk'] = flood_score
         details['flood_risk'] = {
@@ -2001,7 +1486,7 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             'weight': weights['flood_risk'],
             'source': 'From elevation'
         }
-        
+
         # 7. LATITUDE
         lat_score = self._score_latitudinal_advantage(location.lat)
         scores['latitudinal_advantage'] = lat_score
@@ -2011,12 +1496,34 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             'weight': weights['latitudinal_advantage'],
             'source': 'Geographic'
         }
-        
-        # Calculate total
+
+        # ============ FIXED BASE SCORE (0-100) ============
+        # Each criterion is scored 0-5, so max weighted total = sum(weights) * 5
         total_score = sum(scores[key] * weights.get(key, 0) for key in scores.keys() if key in weights)
-        max_possible = sum(weights.values())
+        max_possible = sum(weights.values()) * 5.0
         percentage = (total_score / max_possible) * 100 if max_possible > 0 else 0
-        
+
+        # ============ FIXED CRITICAL PENALTIES ============
+        penalty = 0.0
+        penalty_reasons = []
+
+        if elevation_m < 20:
+            penalty += 15.0
+            penalty_reasons.append(f"Very low elevation ({elevation_m:.0f}m): -15%")
+        if flood_risk == 'High':
+            penalty += 10.0
+            penalty_reasons.append("High flood risk: -10%")
+        if pop_density > 5:
+            penalty += 10.0
+            penalty_reasons.append("High population density: -10%")
+
+        if isinstance(land_details, dict) and land_details.get('developed_areas', 0) >= 10:
+            penalty += 8.0
+            penalty_reasons.append("Scarce land availability: -8%")
+
+        # Clamp final score to 0-100 (never negative, never over 100)
+        percentage = max(0.0, min(100.0, percentage - penalty))
+
         # Rating
         if percentage >= 80:
             rating, emoji, rec = 'Excellent', '🚀', 'Highly recommended for spaceport development'
@@ -2028,17 +1535,16 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             rating, emoji, rec = 'Limited', '⚠️', 'Marginal - requires major investment'
         else:
             rating, emoji, rec = 'Poor', '❌', 'Not recommended for spaceport development'
-        
-        # ============ OSM BACKGROUND (optional, up-to-date) ============
-        
+
+        # OSM BACKGROUND
         try:
             osm_data = self._try_osm_in_background(location, radius)
             if osm_data and any(v > 0 for v in osm_data.values()):
                 osm_available = True
                 data_source_details.append(f"🌐 OSM Background: Found {osm_data.get('airport_count', 0)} airports, {osm_data.get('settlement_count', 0)} settlements")
-        except:
+        except Exception:
             pass
-        
+
         return {
             'success': True,
             'scores': scores,
@@ -2046,6 +1552,9 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
             'weighted_score': total_score,
             'max_possible_score': max_possible,
             'suitability_percentage': round(percentage, 1),
+            'base_percentage': round((total_score / max_possible * 100) if max_possible > 0 else 0, 1),
+            'penalty_applied': round(penalty, 1),
+            'penalty_reasons': penalty_reasons,
             'rating': rating,
             'rating_emoji': emoji,
             'recommendation': rec,
@@ -2068,40 +1577,33 @@ class SpaceportSuitabilityStrategy(AnalysisStrategy):
 class ProximityAnalysisStrategy(AnalysisStrategy):
     def get_name(self) -> str:
         return "Proximity Analysis"
-    
+
     def analyse(self, location: Location, params: Dict) -> Dict:
         amenity_type = params.get('amenity_type', 'hospital')
         radius = params.get('radius', 5000)
-        
         tags_to_query = SPACEPORT_FACILITY_TAGS.get(amenity_type, [('amenity', amenity_type)])
-        
         query_parts = []
         for key, value in tags_to_query:
             query_parts.append(f'node["{key}"="{value}"](around:{radius},{location.lat},{location.lon});')
             query_parts.append(f'way["{key}"="{value}"](around:{radius},{location.lat},{location.lon});')
-        
         query_body = "\n".join(query_parts)
         query = f"""[out:json][timeout:45];
 (
 {query_body}
 );
 out center;"""
-        
         try:
             headers = {'User-Agent': 'BorneoSpaceportGeoAI/1.0'}
-            response = requests.post("https://overpass-api.de/api/interpreter", 
+            response = requests.post("https://overpass-api.de/api/interpreter",
                                    data={'data': query}, headers=headers, timeout=45)
             response.raise_for_status()
             data = response.json()
-            
             elements = data.get('elements', [])
             results = []
             seen_locations = set()
-            
             for elem in elements:
                 lat = elem.get('lat') or elem.get('center', {}).get('lat')
                 lon = elem.get('lon') or elem.get('center', {}).get('lon')
-                
                 if lat and lon:
                     loc_key = f"{round(lat, 5)}_{round(lon, 5)}"
                     if loc_key not in seen_locations:
@@ -2115,7 +1617,6 @@ out center;"""
                             'type': amenity_type,
                             'tags': tags
                         })
-            
             return {
                 'success': True,
                 'count': len(results),
@@ -2126,9 +1627,9 @@ out center;"""
             }
         except Exception as e:
             return {
-                'success': False, 
-                'error': str(e), 
-                'amenities': [], 
+                'success': False,
+                'error': str(e),
+                'amenities': [],
                 'count': 0,
                 'radius': radius,
                 'amenity_type': amenity_type
@@ -2139,14 +1640,14 @@ class StrategySelector:
         'spaceport': SpaceportSuitabilityStrategy,
         'proximity': ProximityAnalysisStrategy,
     }
-    
+
     @classmethod
     def get_strategy(cls, strategy_type: str) -> AnalysisStrategy:
         strategy_class = cls._strategies.get(strategy_type)
         if not strategy_class:
             raise ValueError(f"Unknown strategy: {strategy_type}")
         return strategy_class()
-    
+
     @classmethod
     def available_strategies(cls) -> List[str]:
         return list(cls._strategies.keys())
@@ -2169,15 +1670,14 @@ class Pipeline:
         self.steps: List[PipelineStep] = []
         self.results: Dict[str, Any] = {}
         self.execution_log: List[AnalysisStep] = []
-    
+
     def add_step(self, step: PipelineStep) -> 'Pipeline':
         self.steps.append(step)
         return self
-    
+
     def execute(self, initial_data: Dict, progress_callback: Callable = None) -> Dict:
         current_data = initial_data.copy()
         total_steps = len(self.steps)
-        
         for i, step in enumerate(self.steps):
             analysis_step = AnalysisStep(
                 step_number=i + 1,
@@ -2185,34 +1685,27 @@ class Pipeline:
                 description=step.description,
                 status="running"
             )
-            
             if progress_callback:
                 progress_callback(i / total_steps, f"Running: {step.name}")
-            
             start_time = time.time()
             try:
                 step.result = step.processor(current_data)
                 current_data.update(step.result)
                 self.results[step.name] = step.result
-                
                 step.execution_time = time.time() - start_time
                 analysis_step.status = "completed"
                 analysis_step.result = step.result
                 analysis_step.execution_time = step.execution_time
                 analysis_step.reasoning = f"Successfully processed {step.name}"
-                
             except Exception as e:
                 step.execution_time = time.time() - start_time
                 analysis_step.status = "failed"
                 analysis_step.reasoning = f"Error: {str(e)}"
                 self.execution_log.append(analysis_step)
                 raise
-            
             self.execution_log.append(analysis_step)
-        
         if progress_callback:
             progress_callback(1.0, "Complete")
-        
         return current_data
 
 # ============================================================================
@@ -2223,15 +1716,13 @@ class RateLimiter:
     def __init__(self, calls_per_second: float = 0.5):
         self.calls_per_second = calls_per_second
         self.last_call = 0
-    
+
     def wait(self):
         now = time.time()
         time_since_last = now - self.last_call
         min_interval = 1.0 / self.calls_per_second
-        
         if time_since_last < min_interval:
             time.sleep(min_interval - time_since_last)
-        
         self.last_call = time.time()
 
 # ============================================================================
@@ -2244,17 +1735,15 @@ class BorneoSpaceportGeoAIAgent:
         self.rate_limiter = RateLimiter(calls_per_second=0.5)
         self.short_term_memory: Dict[str, Any] = {}
         self.current_analysis: Optional[AnalysisResult] = None
-    
+
     def reason_about_query(self, query: str) -> tuple:
         query_lower = query.lower()
         steps = []
-        
         steps.append({
             'step': 'Understanding Query',
             'reasoning': f"Analysing spaceport site selection request: '{query}'",
             'action': 'parse_intent'
         })
-        
         similar = self.memory_repo.find_similar_analyses(query, limit=3)
         if similar:
             steps.append({
@@ -2263,7 +1752,6 @@ class BorneoSpaceportGeoAIAgent:
                 'action': 'apply_learned_parameters',
                 'prior_experience': similar[0]
             })
-        
         spaceport_keywords = ['spaceport', 'launch', 'rocket', 'space', 'satellite', 'site', 'suitable', 'best']
         if any(word in query_lower for word in spaceport_keywords):
             analysis_type = 'spaceport'
@@ -2279,7 +1767,6 @@ class BorneoSpaceportGeoAIAgent:
                 'reasoning': 'Defaulting to Spaceport Suitability analysis.',
                 'action': 'use_spaceport_strategy'
             })
-        
         learned_radius = self.memory_repo.get_learned_parameter(analysis_type, 'radius')
         if learned_radius:
             steps.append({
@@ -2295,26 +1782,18 @@ class BorneoSpaceportGeoAIAgent:
                 'action': 'use_default_radius',
                 'value': '10000'
             })
-        
         steps.append({
             'step': 'Execution Planning',
             'reasoning': f'Will execute {analysis_type} analysis with spaceport-optimized settings.',
             'action': 'prepare_execution'
         })
-        
         return steps, analysis_type
-    
-    def execute_analysis(self, location: Location, query: str, 
+
+    def execute_analysis(self, location: Location, query: str,
                          params: Dict, progress_callback: Callable = None) -> AnalysisResult:
         start_time = time.time()
-        
-        result = AnalysisResult(
-            query=query,
-            timestamp=datetime.now().isoformat()
-        )
-        
+        result = AnalysisResult(query=query, timestamp=datetime.now().isoformat())
         reasoning_steps, analysis_type = self.reason_about_query(query)
-        
         for i, step_info in enumerate(reasoning_steps):
             result.steps.append(AnalysisStep(
                 step_number=i + 1,
@@ -2323,23 +1802,15 @@ class BorneoSpaceportGeoAIAgent:
                 status='completed',
                 reasoning=step_info['reasoning']
             ))
-        
         if progress_callback:
             progress_callback(0.3, "Reasoning complete, executing hybrid analysis...")
-        
         try:
             strategy = StrategySelector.get_strategy(analysis_type)
-            
             self.rate_limiter.wait()
-            
             analysis_result = strategy.analyse(location, params)
-            
-            # Add cache info
             analysis_result['from_cache'] = False
-            
             if analysis_result.get('success'):
                 used_osm = analysis_result.get('used_osm', False)
-                
                 result.steps.append(AnalysisStep(
                     step_number=len(result.steps) + 1,
                     name="Data Source Validation",
@@ -2347,7 +1818,6 @@ class BorneoSpaceportGeoAIAgent:
                     status='completed',
                     reasoning=f"Used {'OSM + Geographic' if used_osm else 'Geographic'} rules"
                 ))
-            
             result.steps.append(AnalysisStep(
                 step_number=len(result.steps) + 1,
                 name=f"Execute {strategy.get_name()}",
@@ -2356,10 +1826,8 @@ class BorneoSpaceportGeoAIAgent:
                 result=analysis_result,
                 reasoning=f"Analysis returned {len(str(analysis_result))} bytes of data"
             ))
-            
             result.final_result = analysis_result
             result.success = analysis_result.get('success', False)
-            
         except Exception as e:
             result.steps.append(AnalysisStep(
                 step_number=len(result.steps) + 1,
@@ -2369,12 +1837,9 @@ class BorneoSpaceportGeoAIAgent:
                 reasoning=f"Error: {str(e)}"
             ))
             result.success = False
-        
         if progress_callback:
             progress_callback(0.8, "Storing results in memory...")
-        
         result.total_time = time.time() - start_time
-        
         memory_entry = MemoryEntry(
             query=query,
             result_summary=str(result.final_result)[:500] if result.final_result else "",
@@ -2384,18 +1849,14 @@ class BorneoSpaceportGeoAIAgent:
             parameters_used=params
         )
         self.memory_repo.store_analysis(memory_entry)
-        
         if result.success:
             self.memory_repo.update_learned_parameter(
                 analysis_type, 'radius', str(params.get('radius', 10000)), True
             )
-        
         self.short_term_memory['last_analysis'] = result
         self.short_term_memory['last_location'] = location
-        
         if progress_callback:
             progress_callback(1.0, "Complete")
-        
         return result
 
 # ============================================================================
@@ -2403,23 +1864,14 @@ class BorneoSpaceportGeoAIAgent:
 # ============================================================================
 
 def render_region_selector():
-    """Render region selector for Sabah and Sarawak"""
-    
     regions = {
         '🌏 All Borneo': 'all',
         '🏝️ Sabah Only': 'sabah',
         '🏝️ Sarawak Only': 'sarawak',
         '🚀 Spaceport Candidates': 'candidates'
     }
-    
-    selected_region = st.selectbox(
-        "Select Region",
-        options=list(regions.keys()),
-        index=0
-    )
-    
+    selected_region = st.selectbox("Select Region", options=list(regions.keys()), index=0)
     region_key = regions[selected_region]
-    
     if region_key == 'sabah':
         locations = SABAH_LOCATIONS
         st.info(f"🏝️ Showing {len(locations)} locations in Sabah")
@@ -2432,7 +1884,6 @@ def render_region_selector():
     else:
         locations = BORNEO_LOCATIONS
         st.info(f"🌏 Showing {len(locations)} locations across Borneo")
-    
     return locations, region_key
 
 def init_session_state():
@@ -2452,8 +1903,6 @@ def init_session_state():
         st.session_state.basemap = "OpenStreetMap"
     if 'show_radius_circle' not in st.session_state:
         st.session_state.show_radius_circle = True
-    if 'show_heatmap' not in st.session_state:
-        st.session_state.show_heatmap = False
     if 'comparison_mode' not in st.session_state:
         st.session_state.comparison_mode = False
     if 'candidate_scores' not in st.session_state:
@@ -2463,7 +1912,7 @@ def render_sidebar():
     with st.sidebar:
         st.markdown("""
         <div style="text-align: center; padding: 10px 0;">
-            <div style="font-size: 2.5rem; font-family: 'Courier New', monospace; 
+            <div style="font-size: 2.5rem; font-family: 'Courier New', monospace;
                  background: linear-gradient(90deg, #00f0ff, #b026ff, #ff2d95);
                  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
                  font-weight: 900; letter-spacing: 4px;">
@@ -2476,170 +1925,126 @@ def render_sidebar():
             <div class="cyber-divider"></div>
         </div>
         """, unsafe_allow_html=True)
-        
         cache_stats = api_cache.get_stats()
         st.markdown(f"""
-        <div style="color: #a0a0c0; font-family: 'Courier New', monospace; font-size: 0.7rem; 
+        <div style="color: #a0a0c0; font-family: 'Courier New', monospace; font-size: 0.7rem;
              letter-spacing: 1px; text-align: center; border: 1px solid rgba(0, 240, 255, 0.1);
              border-radius: 4px; padding: 4px 8px; margin-bottom: 10px;">
             ⚡ CACHE: {cache_stats['total_cached']} RESPONSES
         </div>
         """, unsafe_allow_html=True)
-        
         st.divider()
-        
         st.markdown("""
-        <div style="color: #00f0ff; font-family: 'Courier New', monospace; 
+        <div style="color: #00f0ff; font-family: 'Courier New', monospace;
              letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 10px;">
             ⚡ LOCATION SELECTOR
         </div>
         """, unsafe_allow_html=True)
-        
         locations, region = render_region_selector()
-        
-        quick_location = st.selectbox(
-            "Select Location",
-            list(locations.keys()),
-            index=0
-        )
-        
+        quick_location = st.selectbox("Select Location", list(locations.keys()), index=0)
         if st.button("⚡ GO TO LOCATION", use_container_width=True):
             coords = locations[quick_location]
             st.session_state.selected_location = Location(
                 lat=coords[0], lon=coords[1], name=quick_location
             )
             st.rerun()
-        
         st.caption("Or click on the map to select any location")
-        
         st.divider()
-        
         st.markdown("""
-        <div style="color: #00f0ff; font-family: 'Courier New', monospace; 
+        <div style="color: #00f0ff; font-family: 'Courier New', monospace;
              letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 10px;">
             🗺️ MAP SETTINGS
         </div>
         """, unsafe_allow_html=True)
-        
-        basemap_options = {
-            "OpenStreetMap": "OpenStreetMap",
-            "CartoDB Positron": "CartoDB positron",
-            "CartoDB Dark": "CartoDB dark_matter",
-            "Satellite (ESRI)": "Esri.WorldImagery",
-        }
-        
-        selected_basemap = st.selectbox(
-            "Basemap Style",
-            options=list(basemap_options.keys()),
-            index=2
-        )
-        st.session_state.basemap = basemap_options[selected_basemap]
-        
+        st.session_state.basemap = "OpenStreetMap"
         st.session_state.show_radius_circle = st.checkbox("Show Search Radius", value=True)
-        st.session_state.show_heatmap = st.checkbox("Show Results as Heatmap", value=False)
-        
         st.divider()
-        
         st.markdown("""
-        <div style="color: #00f0ff; font-family: 'Courier New', monospace; 
+        <div style="color: #00f0ff; font-family: 'Courier New', monospace;
              letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 10px;">
             ⚙️ ANALYSIS PARAMETERS
         </div>
         """, unsafe_allow_html=True)
-        
         radius = st.slider("Assessment Radius (m)", 2000, 20000, 10000, 1000)
-        
         st.divider()
-        
         st.markdown("""
-        <div style="color: #00f0ff; font-family: 'Courier New', monospace; 
+        <div style="color: #00f0ff; font-family: 'Courier New', monospace;
              letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 10px;">
             📊 SITE RANKING
         </div>
         """, unsafe_allow_html=True)
-        
         if st.session_state.current_results:
             result_data = st.session_state.current_results
             if 'suitability_percentage' in result_data:
                 pct = result_data['suitability_percentage']
                 rating = result_data['rating']
-                
                 color = "#39ff14" if pct >= 80 else "#00f0ff" if pct >= 65 else "#ff2d95" if pct >= 50 else "#ff6600"
-                
                 st.markdown(f"""
                 <div style="text-align: center; padding: 15px; border: 1px solid rgba(0, 240, 255, 0.2);
                      border-radius: 8px; background: rgba(0, 240, 255, 0.05);">
-                    <div style="font-size: 2.5rem; font-weight: 900; color: {color}; 
+                    <div style="font-size: 2.5rem; font-weight: 900; color: {color};
                          font-family: 'Courier New', monospace; text-shadow: 0 0 30px {color}33;">
                         {pct}%
                     </div>
-                    <div style="color: #d0d0e8; font-family: 'Courier New', monospace; 
+                    <div style="color: #d0d0e8; font-family: 'Courier New', monospace;
                          letter-spacing: 2px; font-size: 0.8rem;">
                         {rating}
                     </div>
-                    <div style="color: #8080a0; font-family: 'Courier New', monospace; 
+                    <div style="color: #8080a0; font-family: 'Courier New', monospace;
                          font-size: 0.7rem; margin-top: 5px;">
                         {result_data['recommendation'][:50]}...
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
-                
                 if result_data.get('used_osm', False):
                     st.markdown("""
-                    <div style="color: #39ff14; font-family: 'Courier New', monospace; 
-                         font-size: 0.7rem; letter-spacing: 1px; text-align: center; 
-                         border: 1px solid #39ff14; border-radius: 4px; padding: 2px 8px; 
+                    <div style="color: #39ff14; font-family: 'Courier New', monospace;
+                         font-size: 0.7rem; letter-spacing: 1px; text-align: center;
+                         border: 1px solid #39ff14; border-radius: 4px; padding: 2px 8px;
                          margin-top: 8px; display: inline-block; width: 100%;">
                         🌐 OSM UP-TO-DATE
                     </div>
                     """, unsafe_allow_html=True)
                 else:
                     st.markdown("""
-                    <div style="color: #00f0ff; font-family: 'Courier New', monospace; 
-                         font-size: 0.7rem; letter-spacing: 1px; text-align: center; 
-                         border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 4px; 
+                    <div style="color: #00f0ff; font-family: 'Courier New', monospace;
+                         font-size: 0.7rem; letter-spacing: 1px; text-align: center;
+                         border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 4px;
                          padding: 2px 8px; margin-top: 8px; display: inline-block; width: 100%;">
                         📍 GEOGRAPHIC RULES
                     </div>
                     """, unsafe_allow_html=True)
         else:
             st.info("Run an analysis to see site ranking")
-        
         if st.button("🔄 COMPARE ALL", use_container_width=True):
             st.session_state.comparison_mode = True
             st.rerun()
-        
         if st.button("🧹 CLEAR", use_container_width=True):
             st.session_state.current_results = None
             st.session_state.reasoning_log = []
             st.session_state.candidate_scores = {}
             st.success("Results cleared!")
             st.rerun()
-        
         if st.button("🗑️ CLEAR CACHE", use_container_width=True):
             api_cache.clear()
             st.success("Cache cleared!")
             st.rerun()
-        
         st.divider()
-        
         st.markdown("""
-        <div style="color: #00f0ff; font-family: 'Courier New', monospace; 
+        <div style="color: #00f0ff; font-family: 'Courier New', monospace;
              letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 10px;">
             🧠 AGENT MEMORY
         </div>
         """, unsafe_allow_html=True)
-        
         stats = st.session_state.agent.memory_repo.get_analysis_stats()
-        
         col1, col2 = st.columns(2)
         with col1:
             st.markdown(f"""
             <div style="text-align: center; padding: 8px; border: 1px solid rgba(0, 240, 255, 0.1);
                  border-radius: 4px;">
-                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem; 
+                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem;
                      letter-spacing: 1px;">ANALYSES</div>
-                <div style="color: #00f0ff; font-family: 'Courier New', monospace; font-size: 1.2rem; 
+                <div style="color: #00f0ff; font-family: 'Courier New', monospace; font-size: 1.2rem;
                      font-weight: bold;">{stats['total_analyses']}</div>
             </div>
             """, unsafe_allow_html=True)
@@ -2647,23 +2052,21 @@ def render_sidebar():
             st.markdown(f"""
             <div style="text-align: center; padding: 8px; border: 1px solid rgba(0, 240, 255, 0.1);
                  border-radius: 4px;">
-                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem; 
+                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem;
                      letter-spacing: 1px;">SUCCESS RATE</div>
-                <div style="color: #39ff14; font-family: 'Courier New', monospace; font-size: 1.2rem; 
+                <div style="color: #39ff14; font-family: 'Courier New', monospace; font-size: 1.2rem;
                      font-weight: bold;">{stats['success_rate']*100:.0f}%</div>
             </div>
             """, unsafe_allow_html=True)
-        
         st.markdown(f"""
         <div style="text-align: center; padding: 8px; border: 1px solid rgba(0, 240, 255, 0.1);
              border-radius: 4px; margin-top: 8px;">
-            <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem; 
+            <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem;
                  letter-spacing: 1px;">AVG EXECUTION</div>
-            <div style="color: #b026ff; font-family: 'Courier New', monospace; font-size: 1.2rem; 
+            <div style="color: #b026ff; font-family: 'Courier New', monospace; font-size: 1.2rem;
                  font-weight: bold;">{stats['avg_execution_time']:.2f}s</div>
         </div>
         """, unsafe_allow_html=True)
-        
         if st.button("🗑️ CLEAR MEMORY", use_container_width=True):
             Path("borneo_spaceport_memory.db").unlink(missing_ok=True)
             st.session_state.agent = BorneoSpaceportGeoAIAgent()
@@ -2673,39 +2076,22 @@ def render_sidebar():
             st.session_state.candidate_scores = {}
             st.success("All memory cleared!")
             st.rerun()
-        
         return {'radius': radius}
 
 def render_map(params: Dict):
     st.subheader("🗺️ Borneo Spaceport Site Map")
-    
     center = [5.0, 117.0]
     location_name = "Borneo"
-    
     if st.session_state.selected_location:
-        center = [st.session_state.selected_location.lat, 
+        center = [st.session_state.selected_location.lat,
                   st.session_state.selected_location.lon]
         location_name = st.session_state.selected_location.name or "Borneo Location"
-    
-    basemap = st.session_state.get('basemap', 'OpenStreetMap')
-    
-    tile_options = {
-        "OpenStreetMap": "OpenStreetMap",
-        "CartoDB positron": "CartoDB positron", 
-        "CartoDB dark_matter": "CartoDB dark_matter",
-        "Esri.WorldImagery": "OpenStreetMap",
-    }
-    
-    selected_tiles = tile_options.get(basemap, "OpenStreetMap")
-    
     try:
-        m = folium.Map(location=center, zoom_start=7, tiles=selected_tiles)
+        m = folium.Map(location=center, zoom_start=7, tiles="OpenStreetMap")
     except Exception:
         m = folium.Map(location=center, zoom_start=7)
-    
     if st.session_state.selected_location:
         marker_color = 'red'
-        
         result_data = st.session_state.get('current_results', None)
         if result_data and 'suitability_percentage' in result_data:
             pct = result_data['suitability_percentage']
@@ -2719,7 +2105,6 @@ def render_map(params: Dict):
                 marker_color = 'lightred'
             else:
                 marker_color = 'red'
-        
         folium.Marker(
             center,
             popup=f"""
@@ -2731,7 +2116,6 @@ def render_map(params: Dict):
             tooltip="🚀 Candidate Site - Click for details",
             icon=folium.Icon(color=marker_color, icon='rocket', prefix='fa')
         ).add_to(m)
-        
         if st.session_state.get('show_radius_circle', True):
             radius = params.get('radius', 10000)
             folium.Circle(
@@ -2744,15 +2128,11 @@ def render_map(params: Dict):
                 weight=2,
                 tooltip=f"Assessment radius: {radius}m"
             ).add_to(m)
-    
-    # Show all locations (limited for performance)
     result_data = st.session_state.get('current_results', None)
-    
     if result_data and 'suitability_percentage' in result_data:
         pct = result_data['suitability_percentage']
         rating = result_data.get('rating', 'Unknown')
         recommendation = result_data.get('recommendation', '')
-        
         if pct >= 80:
             color = 'green'
         elif pct >= 65:
@@ -2763,7 +2143,6 @@ def render_map(params: Dict):
             color = 'lightred'
         else:
             color = 'red'
-        
         folium.Circle(
             center,
             radius=params.get('radius', 10000),
@@ -2774,35 +2153,28 @@ def render_map(params: Dict):
             weight=3,
             tooltip=f"🚀 Suitability: {rating} ({pct}%)\n{recommendation}"
         ).add_to(m)
-    
     try:
         Fullscreen(position='topleft').add_to(m)
     except Exception:
         pass
-    
     try:
         MiniMap(toggle_display=True, position='bottomright').add_to(m)
     except Exception:
         pass
-    
     try:
         MousePosition(position='bottomleft', prefix='Borneo Coords: ').add_to(m)
     except Exception:
         pass
-    
     map_data = st_folium(m, width=None, height=500, use_container_width=True)
-    
     if map_data and map_data.get('last_clicked'):
         clicked_lat = map_data['last_clicked']['lat']
         clicked_lon = map_data['last_clicked']['lng']
         new_location = Location(lat=clicked_lat, lon=clicked_lon, name="Borneo Location")
-        
         if st.session_state.selected_location is None or \
            abs(st.session_state.selected_location.lat - clicked_lat) > 0.0001 or \
            abs(st.session_state.selected_location.lon - clicked_lon) > 0.0001:
             st.session_state.selected_location = new_location
             st.rerun()
-    
     if result_data and 'suitability_percentage' in result_data:
         if result_data.get('used_osm', False):
             st.success(f"🚀 {result_data['rating']} Suitability: {result_data['suitability_percentage']}% (🌐 OSM Up-to-Date)")
@@ -2812,7 +2184,6 @@ def render_map(params: Dict):
 
 def render_query_interface(params: Dict):
     st.subheader("💬 Natural Language Query")
-    
     with st.expander("💡 Example Spaceport Queries", expanded=False):
         st.markdown("""
         **🚀 Spaceport Site Selection:**
@@ -2821,73 +2192,60 @@ def render_query_interface(params: Dict):
         - "Evaluate this site for rocket launch facilities"
         - "Compare all candidate sites for spaceport development"
         - "What are the advantages of Kudat for a spaceport?"
-        
+
         **📊 Site Suitability:**
         - "Assess flood risk at this location"
         - "What's the elevation here?"
         - "Check infrastructure access"
         - "Is this area suitable for a launch facility?"
         """)
-    
     query = st.text_area(
         "Describe what you want to analyse for spaceport site selection:",
         placeholder="e.g., Find the best location for a spaceport in Sabah",
         height=100
     )
-    
     col1, col2, col3 = st.columns([1, 1, 2])
     with col1:
         analyse_btn = st.button("🚀 ANALYSE SITE", type="primary", use_container_width=True)
     with col2:
         clear_btn = st.button("🧹 CLEAR", use_container_width=True)
-    
     if clear_btn:
         st.session_state.current_results = None
         st.session_state.reasoning_log = []
         st.rerun()
-    
     if analyse_btn and st.session_state.selected_location:
         with st.spinner("🧠 HYBRID: INSTANT results + OSM background..."):
             progress_bar = st.progress(0)
             status_text = st.empty()
-            
             def update_progress(progress, status):
                 progress_bar.progress(progress)
                 status_text.text(status)
-            
             result = st.session_state.agent.execute_analysis(
                 st.session_state.selected_location,
                 query if query else "Evaluate this site for spaceport development",
                 params,
                 progress_callback=update_progress
             )
-            
             st.session_state.analysis_history.append(result)
             st.session_state.reasoning_log = result.steps
             st.session_state.current_results = result.final_result
-            
             progress_bar.empty()
             status_text.empty()
-            
             if result.success:
                 st.success(f"✅ Spaceport site analysis complete in {result.total_time:.2f}s")
                 st.rerun()
             else:
                 st.error("❌ Analysis failed. Check reasoning log for details.")
-    
     elif analyse_btn and not st.session_state.selected_location:
         st.warning("Please select a location in Borneo first!")
 
 def render_reasoning_log():
     st.subheader("🧠 Agent Reasoning (Chain of Thought)")
-    
     if not st.session_state.reasoning_log:
         st.info("Run a spaceport site analysis to see the agent's reasoning process.")
         return
-    
     for step in st.session_state.reasoning_log:
         status_icon = "✅" if step.status == "completed" else "❌" if step.status == "failed" else "⏳"
-        
         with st.expander(f"{status_icon} Step {step.step_number}: {step.name}", expanded=True):
             st.write(f"**Reasoning:** {step.reasoning}")
             if step.execution_time > 0:
@@ -2897,31 +2255,33 @@ def render_reasoning_log():
 
 def render_results():
     st.subheader("🚀 Spaceport Site Analysis Results")
-    
     if not st.session_state.analysis_history:
         st.info("No analysis results yet. Run a spaceport site analysis to see results here.")
         return
-    
     last_result = st.session_state.analysis_history[-1]
-    
     if not last_result.final_result:
         st.warning("No results available.")
         return
-    
     result_data = last_result.final_result
-    
     if not result_data.get('success', False):
         st.error(f"Analysis failed: {result_data.get('error', 'Unknown error')}")
         return
-    
     if 'suitability_percentage' in result_data:
-        # Show method
         if result_data.get('used_osm', False):
             st.success("🌐 **HYBRID: OSM Up-to-Date + Geographic Rules**")
         else:
             st.success("📍 **Geographic Rules (INSTANT)** - OSM unavailable")
-        
-        # Show data source details
+
+        # Show penalty if applied
+        if result_data.get('penalty_applied', 0) > 0:
+            with st.expander(f"⚠️ Score Penalty Applied: -{result_data['penalty_applied']}%"):
+                st.write(f"**Base score:** {result_data.get('base_percentage', 0)}%")
+                st.write(f"**Penalty:** -{result_data['penalty_applied']}%")
+                st.write("**Reasons:**")
+                for r in result_data.get('penalty_reasons', []):
+                    st.warning(r)
+                st.write(f"**Final score:** {result_data['suitability_percentage']}%")
+
         if 'data_source_details' in result_data:
             with st.expander("📊 Data Sources Used"):
                 for detail in result_data['data_source_details']:
@@ -2933,14 +2293,9 @@ def render_results():
                         st.warning(f"⚠️ {detail}")
                     else:
                         st.success(f"✅ {detail}")
-        
-        # Show OSM data if available
         if result_data.get('used_osm', False) and result_data.get('osm_data'):
             with st.expander("🌐 OSM Data Found (Up-to-Date)"):
-                osm_data = result_data['osm_data']
-                st.json(osm_data)
-        
-        # Main score display
+                st.json(result_data['osm_data'])
         col1, col2, col3 = st.columns([2, 1, 1])
         with col1:
             st.metric(
@@ -2949,26 +2304,20 @@ def render_results():
                 delta=f"{result_data['rating']} {result_data['rating_emoji']}"
             )
             st.caption(result_data['recommendation'])
-        
         with col2:
             st.metric("Elevation", f"{result_data.get('elevation_m', 0):.0f}m")
-        
         with col3:
             st.metric("Latitude", f"{result_data.get('lat_deg', 0):.1f}°{'N' if result_data.get('lat_deg', 0) >= 0 else 'S'}")
-        
         st.write("---")
         st.write("**Detailed Scoring Breakdown:**")
-        
         details = result_data.get('details', {})
         scores = result_data.get('scores', {})
-        
         score_data = []
         for key, detail in details.items():
             weight = detail.get('weight', 0)
             score = scores.get(key, 0)
             weighted = score * weight
             source = detail.get('source', 'Unknown')
-            
             if 'Geographic' in source:
                 source_emoji = '📍'
             elif 'Live' in source:
@@ -2977,7 +2326,6 @@ def render_results():
                 source_emoji = '⚠️'
             else:
                 source_emoji = 'ℹ️'
-            
             score_data.append({
                 'Criteria': key.replace('_', ' ').title(),
                 'Score': f"{score:.1f}/5",
@@ -2986,24 +2334,21 @@ def render_results():
                 'Weighted': f"{weighted:.2f}",
                 'Source': f"{source_emoji} {source[:35]}{'...' if len(source) > 35 else ''}"
             })
-        
         df = pd.DataFrame(score_data)
         st.dataframe(df, use_container_width=True, hide_index=True)
-        
         chart_data = pd.DataFrame([
             {'Criteria': row['Criteria'], 'Score': float(row['Score'].split('/')[0])}
             for row in score_data
         ])
         st.bar_chart(chart_data.set_index('Criteria'))
-        
-        # ============ NEW: RECOMMENDATION STRATEGY ============
         st.write("---")
         st.write("**📋 Detailed Recommendation Strategy**")
-        
-        # Generate recommendations
         recommendations = generate_recommendation_strategy(result_data)
-        
-        # Overall feasibility
+
+        risk = recommendations.get('risk_level', 'Unknown')
+        risk_color = ('#ff2d95' if risk in ('High', 'Very High')
+                      else '#39ff14' if risk == 'Low' else '#ffe84d')
+
         st.markdown(f"""
         <div class="recommendation-container">
             <div class="recommendation-title">🎯 Overall Feasibility</div>
@@ -3013,6 +2358,12 @@ def render_results():
             <div style="display: flex; gap: 20px; margin-top: 10px; flex-wrap: wrap;">
                 <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.8rem; border: 1px solid rgba(0,240,255,0.1); padding: 8px 15px; border-radius: 8px;">
                     💰 Investment Required: <span style="color: #00f0ff; font-weight: bold;">{recommendations.get('investment_required', 'Unknown')}</span>
+                </div>
+                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.8rem; border: 1px solid rgba(255,45,149,0.3); padding: 8px 15px; border-radius: 8px;">
+                    ⚠️ Risk Level: <span style="color: {risk_color}; font-weight: bold;">{risk}</span>
+                </div>
+                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.8rem; border: 1px solid rgba(255,45,149,0.3); padding: 8px 15px; border-radius: 8px;">
+                    🚨 Critical Actions: <span style="color: #ff2d95; font-weight: bold;">{recommendations.get('critical_action_count', 0)}</span>
                 </div>
                 <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.8rem; border: 1px solid rgba(0,240,255,0.1); padding: 8px 15px; border-radius: 8px;">
                     ⏱️ Immediate: <span style="color: #39ff14; font-weight: bold;">{recommendations['timeline_summary']['immediate']}</span>
@@ -3026,16 +2377,13 @@ def render_results():
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
-        # Immediate Actions (Critical)
+
         if recommendations['immediate_actions']:
             st.markdown("""
             <div class="recommendation-container">
                 <div class="recommendation-title">🔴 IMMEDIATE ACTIONS (0-6 Months)</div>
             """, unsafe_allow_html=True)
-            
             for action in recommendations['immediate_actions']:
-                priority_class = "recommendation-priority-critical" if action.get('priority') == 'Critical' else "recommendation-priority-high"
                 st.markdown(f"""
                 <div class="recommendation-item">
                     <span class="icon">{action.get('priority', '')}</span>
@@ -3043,16 +2391,13 @@ def render_results():
                     <span style="float: right; color: #8080a0; font-size: 0.8rem;">{action.get('cost', '')}</span>
                 </div>
                 """, unsafe_allow_html=True)
-            
             st.markdown("</div>", unsafe_allow_html=True)
-        
-        # Short-term Actions
+
         if recommendations['short_term_actions']:
             st.markdown("""
             <div class="recommendation-container">
                 <div class="recommendation-title">🟡 SHORT-TERM ACTIONS (6-18 Months)</div>
             """, unsafe_allow_html=True)
-            
             for action in recommendations['short_term_actions']:
                 st.markdown(f"""
                 <div class="recommendation-item">
@@ -3061,16 +2406,13 @@ def render_results():
                     <span style="float: right; color: #8080a0; font-size: 0.8rem;">{action.get('cost', '')}</span>
                 </div>
                 """, unsafe_allow_html=True)
-            
             st.markdown("</div>", unsafe_allow_html=True)
-        
-        # Long-term Actions
+
         if recommendations['long_term_actions']:
             st.markdown("""
             <div class="recommendation-container">
                 <div class="recommendation-title">🟢 LONG-TERM ACTIONS (18-36 Months)</div>
             """, unsafe_allow_html=True)
-            
             for action in recommendations['long_term_actions']:
                 st.markdown(f"""
                 <div class="recommendation-item">
@@ -3079,10 +2421,8 @@ def render_results():
                     <span style="float: right; color: #8080a0; font-size: 0.8rem;">{action.get('cost', '')}</span>
                 </div>
                 """, unsafe_allow_html=True)
-            
             st.markdown("</div>", unsafe_allow_html=True)
-        
-        # Investment summary
+
         st.markdown(f"""
         <div class="recommendation-container">
             <div class="recommendation-title">💰 Investment Summary</div>
@@ -3104,16 +2444,12 @@ def render_results():
             </div>
         </div>
         """, unsafe_allow_html=True)
-        
-        # ============ END OF RECOMMENDATION STRATEGY ============
-        
+
         st.write("---")
         st.write("**📋 Summary**")
-        
         recommendation = result_data.get('recommendation', '')
         rating = result_data.get('rating', 'Unknown')
         emoji = result_data.get('rating_emoji', '')
-        
         if rating in ['Excellent', 'Good']:
             st.success(f"{emoji} **{rating}** - {recommendation}")
             st.write("This site appears to have strong potential for spaceport development.")
@@ -3123,15 +2459,13 @@ def render_results():
         else:
             st.error(f"{emoji} **{rating}** - {recommendation}")
             st.write("This site may not be suitable for spaceport development.")
-    
+
     elif 'amenities' in result_data:
         amenity_type = result_data.get('amenity_type', 'location')
         count = result_data.get('count', 0)
         radius = result_data.get('radius', 0)
         location_info = result_data.get('location', 'Borneo')
-        
         st.write(f"**Found {count} {amenity_type}(s) within {radius}m in {location_info}**")
-        
         if result_data['amenities']:
             df = pd.DataFrame(result_data['amenities'])
             display_cols = [col for col in ['name', 'lat', 'lon', 'type'] if col in df.columns]
@@ -3139,19 +2473,15 @@ def render_results():
 
 def render_comparison_mode():
     st.subheader("🔄 Site Comparison Dashboard")
-    
     with st.spinner("Analysing all candidate sites (HYBRID)..."):
         results = []
         progress_bar = st.progress(0)
         status_text = st.empty()
-        
         for i, (name, coords) in enumerate(SPACEPORT_CANDIDATES.items()):
             status_text.text(f"Analysing: {name}")
             progress_bar.progress((i + 1) / len(SPACEPORT_CANDIDATES))
-            
             location = Location(lat=coords[0], lon=coords[1], name=name)
             params = {'radius': 10000}
-            
             try:
                 strategy = StrategySelector.get_strategy('spaceport')
                 result = strategy.analyse(location, params)
@@ -3179,37 +2509,26 @@ def render_comparison_mode():
                     'Recommendation': f"Analysis error: {str(e)[:50]}",
                     'Data': None
                 })
-        
         progress_bar.empty()
         status_text.empty()
-        
         if results:
             df = pd.DataFrame(results)
             df_sorted = df.sort_values('Suitability %', ascending=False)
-            
             st.write(f"**📊 Comparison of {len(results)} Candidate Sites**")
-            
             top_site = df_sorted.iloc[0]
             st.success(f"🚀 **Top Recommended Site: {top_site['Site']}** ({top_site['Suitability %']:.1f}%)")
             st.caption(top_site['Recommendation'])
-            
             display_cols = ['Site', 'Suitability %', 'Rating', 'Elevation (m)', 'Flood Risk', 'Latitude (°)', 'Method']
             st.dataframe(df_sorted[display_cols], use_container_width=True, hide_index=True)
-            
             chart_data = df_sorted[['Site', 'Suitability %']].set_index('Site')
             st.bar_chart(chart_data)
-            
             st.session_state.candidate_scores = {row['Site']: row['Suitability %'] for _, row in df.iterrows()}
-            
             st.write("---")
             st.write("**🗺️ Site Map with Suitability Scores**")
-            
-            m = folium.Map(location=[5.0, 117.0], zoom_start=7)
-            
+            m = folium.Map(location=[5.0, 117.0], zoom_start=7, tiles="OpenStreetMap")
             for _, row in df.iterrows():
                 name = row['Site']
                 score = row['Suitability %']
-                
                 if score >= 80:
                     color = 'green'
                 elif score >= 65:
@@ -3220,7 +2539,6 @@ def render_comparison_mode():
                     color = 'lightred'
                 else:
                     color = 'red'
-                
                 coords = SPACEPORT_CANDIDATES.get(name, (0, 0))
                 folium.Marker(
                     coords,
@@ -3233,19 +2551,15 @@ def render_comparison_mode():
                     tooltip=f"{name}: {score:.1f}%",
                     icon=folium.Icon(color=color, icon='rocket', prefix='fa')
                 ).add_to(m)
-            
             try:
                 Fullscreen(position='topleft').add_to(m)
             except Exception:
                 pass
-            
             st_folium(m, width=None, height=400, use_container_width=True)
-            
             selected_site = st.selectbox(
                 "Select a site for detailed analysis:",
                 df_sorted['Site'].tolist()
             )
-            
             if selected_site:
                 coords = SPACEPORT_CANDIDATES[selected_site]
                 st.session_state.selected_location = Location(
@@ -3258,9 +2572,7 @@ def render_comparison_mode():
 
 def render_memory_explorer():
     st.subheader("💾 Memory Explorer")
-    
     tab1, tab2 = st.tabs(["Past Analyses", "Learned Parameters"])
-    
     with tab1:
         all_analyses = st.session_state.agent.memory_repo.get_all_analyses(limit=20)
         if all_analyses:
@@ -3276,7 +2588,6 @@ def render_memory_explorer():
                         st.write(f"**Parameters:** {entry['parameters']}")
         else:
             st.info("No past analyses stored yet. Run a spaceport analysis to see it here.")
-    
     with tab2:
         try:
             conn = sqlite3.connect("borneo_spaceport_memory.db")
@@ -3284,56 +2595,48 @@ def render_memory_explorer():
             cursor.execute("SELECT * FROM learned_parameters ORDER BY success_rate DESC")
             rows = cursor.fetchall()
             conn.close()
-            
             if rows:
                 st.write(f"**{len(rows)} learned parameters**")
                 df = pd.DataFrame(rows, columns=['ID', 'Analysis Type', 'Parameter', 'Value', 'Success Rate', 'Usage Count', 'Last Updated'])
                 st.dataframe(df[['Analysis Type', 'Parameter', 'Value', 'Success Rate', 'Usage Count']], use_container_width=True)
             else:
                 st.info("No learned parameters yet. The agent learns from successful analyses.")
-        except Exception as e:
+        except Exception:
             st.info("No learned parameters yet. The agent learns from successful analyses.")
 
 def main():
-    # Apply Cyberpunk CSS
     st.markdown(CYBERPUNK_CSS, unsafe_allow_html=True)
-    
-    # Cyberpunk Header
     st.markdown("""
     <div style="text-align: center; padding: 20px 0 10px 0;">
         <div class="main-title">🚀 BORNEO SPACEPORT</div>
         <div class="subtitle">SABAH &amp; SARAWAK · SITE SELECTOR</div>
         <div class="cyber-divider"></div>
-        <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.7rem; 
+        <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.7rem;
              letter-spacing: 4px; margin-top: 5px;">
             ⚡ HYBRID · OSM LIVE · INSTANT RESULTS ⚡
         </div>
     </div>
     """, unsafe_allow_html=True)
-    
     init_session_state()
-    
-    # Show location count
     total_locations = len(SABAH_LOCATIONS) + len(SARAWAK_LOCATIONS)
     st.markdown(f"""
-    <div style="display: flex; justify-content: space-between; padding: 8px 15px; 
-         border: 1px solid rgba(0, 240, 255, 0.1); border-radius: 8px; 
+    <div style="display: flex; justify-content: space-between; padding: 8px 15px;
+         border: 1px solid rgba(0, 240, 255, 0.1); border-radius: 8px;
          background: rgba(0, 240, 255, 0.03); margin-bottom: 15px;">
-        <span style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.7rem; 
+        <span style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.7rem;
              letter-spacing: 1px;">
             📍 LOCATIONS LOADED
         </span>
-        <span style="color: #00f0ff; font-family: 'Courier New', monospace; font-size: 0.8rem; 
+        <span style="color: #00f0ff; font-family: 'Courier New', monospace; font-size: 0.8rem;
              font-weight: bold; letter-spacing: 1px;">
             {total_locations}
         </span>
-        <span style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem; 
+        <span style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem;
              letter-spacing: 1px;">
             SABAH · SARAWAK
         </span>
     </div>
     """, unsafe_allow_html=True)
-    
     if st.session_state.get('comparison_mode', False):
         render_comparison_mode()
         if st.button("← BACK TO SINGLE SITE"):
@@ -3341,51 +2644,41 @@ def main():
             st.rerun()
         st.divider()
         return
-    
     params = render_sidebar()
-    
     col1, col2 = st.columns([1.5, 1])
-    
     with col1:
         render_map(params)
         render_query_interface(params)
-    
     with col2:
         if st.session_state.selected_location:
             name = st.session_state.selected_location.name or "Borneo Location"
             st.markdown(f"""
             <div style="padding: 10px 15px; border: 1px solid rgba(0, 240, 255, 0.15);
                  border-radius: 8px; background: rgba(0, 240, 255, 0.03); margin-bottom: 15px;">
-                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem; 
+                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem;
                      letter-spacing: 1px;">SELECTED LOCATION</div>
                 <div style="color: #00f0ff; font-family: 'Courier New', monospace; font-size: 0.9rem;">
                     {name}
                 </div>
-                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem; 
+                <div style="color: #8080a0; font-family: 'Courier New', monospace; font-size: 0.6rem;
                      letter-spacing: 1px;">
                     {st.session_state.selected_location.lat:.4f}, {st.session_state.selected_location.lon:.4f}
                 </div>
             </div>
             """, unsafe_allow_html=True)
         render_reasoning_log()
-    
     st.divider()
-    
     col1, col2 = st.columns(2)
-    
     with col1:
         render_results()
-    
     with col2:
         render_memory_explorer()
-    
-    # Cyberpunk Footer
     st.markdown("""
     <div class="cyber-divider"></div>
-    <div style="text-align: center; padding: 15px 0; color: #333; font-family: 'Courier New', monospace; 
+    <div style="text-align: center; padding: 15px 0; color: #333; font-family: 'Courier New', monospace;
          font-size: 0.6rem; letter-spacing: 2px;">
-        <span style="color: #00f0ff;">[</span> 
-        BORNEO SPACEPORT SELECTOR v2.0 · CYBERPUNK EDITION 
+        <span style="color: #00f0ff;">[</span>
+        BORNEO SPACEPORT SELECTOR v2.0 · CYBERPUNK EDITION
         <span style="color: #00f0ff;">]</span>
     </div>
     """, unsafe_allow_html=True)
