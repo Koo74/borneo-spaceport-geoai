@@ -80,7 +80,8 @@ Borneo Spaceport is free and open source — no ads, no tracking, no paywalls.
 If this app helped you evaluate spaceport sites, learn about equatorial launches, or explore Borneo's geography — you can support development here:
 
 <a href="https://buymeacoffee.com/stargazex" target="_blank"> <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" > </a>
-Or click here directly: ☕ buymeacoffee.com/stargazex
+Or click here directly: ☕ <a href="https://www.buymeacoffee.com/stargazex">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 40px !important;width: 145px !important;" >
 
 💚 Your support goes toward:
 🛰️ Server costs for hosting the app (Streamlit Community Cloud)
