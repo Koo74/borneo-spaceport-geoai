@@ -1,4 +1,4 @@
-# borneo-spaceport-geoai
+# Borneo-starbase-geoai
 Starbase infrastructure Agentic GeoAI Borneo East Malaysia(Sabah &amp; Sarawak)
 
 # 🚀 Borneo Spaceport
@@ -96,7 +96,7 @@ Made with 🚀 by Guan Min (stargazex) in Malaysia 🇲🇾
 
 ⭐ Star this repo if you find it useful!
 
-https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support-yellow?style=flat&logo=buy-me-a-coffee&logoColor=white
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-☕-yellow?style=flat&logo=buy-me-a-coffee)](https://buymeacoffee.com/stargazex)
 
 </div> ```
 
